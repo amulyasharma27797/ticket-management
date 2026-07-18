@@ -1,0 +1,35 @@
+---
+description: Sync with main before starting work and before pushing feature branches
+alwaysApply: true
+---
+
+# Git Sync With Main
+
+Before **starting a new phase/ticket** or **pushing a feature branch**, sync with `main`:
+
+```bash
+git fetch origin
+git checkout main
+git pull origin main
+git checkout -b cursor/phase-N-<summary>   # new work only
+# OR for an existing branch:
+git checkout cursor/phase-N-<summary>
+git merge origin/main                      # or: git rebase origin/main
+```
+
+## When to sync
+
+| Trigger | Action |
+|---------|--------|
+| Start implementing a new phase/ticket | Pull latest `main`, branch from it |
+| Before `git push` on a feature branch | Merge or rebase `origin/main` into the branch, resolve conflicts, re-run tests |
+| After a PR is merged while you have open work | Sync `main`, then merge into your feature branch |
+
+## Push checklist
+
+1. `git fetch origin && git merge origin/main` (on feature branch)
+2. `./scripts/lint.sh`
+3. Run backend + frontend tests
+4. `git push` only if all checks pass
+
+Never push a feature branch that is behind `main` without syncing first.

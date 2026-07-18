@@ -42,3 +42,23 @@ class ValidationError(AppException):
             message=message,
             details=details,
         )
+
+
+class NotFoundError(AppException):
+    def __init__(self, message: str = "Resource not found") -> None:
+        super().__init__(status_code=404, code="NOT_FOUND", message=message)
+
+
+class ForbiddenError(AppException):
+    def __init__(self, message: str = "Forbidden") -> None:
+        super().__init__(status_code=403, code="FORBIDDEN", message=message)
+
+
+class TicketNotEditableError(AppException):
+    def __init__(self, message: str = "Ticket cannot be edited in its current status") -> None:
+        super().__init__(status_code=403, code="TICKET_NOT_EDITABLE", message=message)
+
+
+class InvalidStatusTransitionError(AppException):
+    def __init__(self, message: str = "Invalid ticket status transition") -> None:
+        super().__init__(status_code=400, code="INVALID_STATUS_TRANSITION", message=message)

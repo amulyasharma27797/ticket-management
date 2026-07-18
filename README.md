@@ -153,9 +153,24 @@ Runtime state (PIDs, logs) is stored in `.harness/` (also gitignored).
 ### Docker (recommended for parity)
 
 ```bash
-docker compose up --build          # start all services
+docker compose up --build          # start all services (hot reload enabled by default)
 docker compose exec backend pytest # run backend tests
 ```
+
+**Hot reload:** Source is mounted into the containers, so code edits apply without rebuilding.
+
+| Service  | Behavior on save |
+|----------|------------------|
+| Frontend | Vite HMR updates the browser instantly |
+| Backend  | Uvicorn reloads the API process (`UVICORN_RELOAD=true` in `.env`) |
+
+Rebuild only when dependencies change (`requirements.txt`, `package.json`):
+
+```bash
+docker compose up --build
+```
+
+Set `UVICORN_RELOAD=false` in `.env` to disable backend auto-reload.
 
 ### Local backend (optional, without harness)
 
@@ -239,7 +254,7 @@ Allowed status transitions (enforced server-side):
 ```
 open        → in_progress, cancelled
 in_progress → resolved, cancelled
-resolved    → closed
+resolved    → closed, cancelled
 closed      → (terminal)
 cancelled   → (terminal)
 ```
@@ -267,7 +282,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | **0** | **Complete** | `cursor/phase-0-scaffold` | Docker Compose, health endpoints, React scaffold — verified locally |
 | **1** | **Complete** | `cursor/phase-1-database` | ORM models, Alembic migrations, Clean Architecture skeleton |
 | **2** | **Complete** | `cursor/phase-2-auth` | JWT auth, login/register/logout/me, protected routes |
-| 3 | Pending | — | Ticket CRUD |
+| **3** | **Complete** | `cursor/phase-3-ticket-crud` | Ticket CRUD — create, detail, patch fields |
+| 4 | Pending | — | Listing, search, filters |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -277,12 +293,32 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 
 **Phase 2 (complete):** JWT access + refresh tokens; register/login/logout/me/refresh endpoints; seed users; frontend login/register pages with protected dashboard route.
 
+**Phase 3 (complete):** Ticket create, detail, and patch endpoints for title/description/priority/assign/status; frontend create and detail pages with field-level validation; Kanban board with status management for admins and agents.
+
+### Changing ticket status
+
+| UI label | API value (`status`) |
+|----------|----------------------|
+| Open | `open` |
+| In Progress | `in_progress` |
+| Pending | `resolved` |
+| Completed | `closed` |
+| Cancelled | `cancelled` |
+
+**Backend:** `PATCH /api/v1/tickets/{id}/status` with body `{ "status": "in_progress" }` — admins and agents only. Transitions are validated server-side; invalid moves return `400 INVALID_STATUS_TRANSITION`.
+
+**Frontend:**
+- **Dashboard (Kanban):** admins and agents drag a ticket card to another column to change its status.
+- **Ticket detail:** admins use the **Move to** dropdown and click **Save changes** to update status.
+
+Regular users can view status but cannot change it.
+
 | Phase | Focus |
 |-------|-------|
 | 0 | Docker Compose, FastAPI + React skeletons, health checks **(done)** |
 | 1 | Database models, Alembic migrations **(done)** |
 | 2 | Authentication (JWT, login/register/logout) **(done)** |
-| 3 | Ticket CRUD |
+| 3 | Ticket CRUD **(done)** |
 | 4 | Listing, search, filters |
 | 5 | Comments |
 | 6 | State machine + integration tests |

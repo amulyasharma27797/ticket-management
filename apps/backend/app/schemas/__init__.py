@@ -6,6 +6,14 @@ from app.schemas.auth import (
     RegisterRequest,
     TokenRefreshResponse,
 )
+from app.schemas.ticket import (
+    TicketAssignRequest,
+    TicketCreateRequest,
+    TicketDescriptionUpdateRequest,
+    TicketPriorityUpdateRequest,
+    TicketResponse,
+    TicketTitleUpdateRequest,
+)
 from app.schemas.user import UserResponse
 
 __all__ = [
@@ -14,6 +22,12 @@ __all__ = [
     "LogoutRequest",
     "RefreshRequest",
     "RegisterRequest",
+    "TicketAssignRequest",
+    "TicketCreateRequest",
+    "TicketDescriptionUpdateRequest",
+    "TicketPriorityUpdateRequest",
+    "TicketResponse",
+    "TicketTitleUpdateRequest",
     "TokenRefreshResponse",
     "UserResponse",
 ]

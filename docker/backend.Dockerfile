@@ -25,4 +25,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=5s --retries=5 --start-period=15s \
   CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
-ENTRYPOINT ["./scripts/entrypoint.sh"]
+ENTRYPOINT ["bash", "scripts/entrypoint.sh"]
