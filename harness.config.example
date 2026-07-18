@@ -1,0 +1,28 @@
+# harness.config — local dev presets (copy to harness.config, gitignored)
+#
+#   cp harness.config.example harness.config
+
+# Preset: local | hybrid | docker
+#   local  — Postgres in Docker; backend + frontend run natively with hot-reload
+#   hybrid — alias for local
+#   docker — full stack via docker compose
+PRESET=local
+
+# Backend
+BE_HOST=0.0.0.0
+BE_PORT=8000
+BE_HEALTH_URL=http://localhost:8000/api/v1/health
+BE_READY_URL=http://localhost:8000/api/v1/health/ready
+
+# Frontend
+FE_HOST=0.0.0.0
+FE_PORT=5173
+FE_URL=http://localhost:5173
+
+# Smoke test timeout (seconds)
+SMOKE_TIMEOUT=60
+
+# Local/hybrid preset overrides (Postgres via Docker on localhost)
+DATABASE_URL=postgresql+psycopg2://ticket_user:change_me@localhost:5432/ticket_db
+VITE_API_URL=http://localhost:8000/api/v1
+CORS_ORIGINS=http://localhost:5173

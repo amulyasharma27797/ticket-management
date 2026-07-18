@@ -1,0 +1,15 @@
+# Copy to docker-compose.override.yml for local development with hot-reload.
+# docker-compose.override.yml is gitignored.
+
+services:
+  backend:
+    volumes:
+      - ./apps/backend:/app/apps/backend
+      - ./migrations:/app/migrations
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    volumes:
+      - ./apps/frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0

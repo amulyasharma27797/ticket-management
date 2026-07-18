@@ -1,0 +1,67 @@
+---
+description: Project overview, architecture, and engineering standards for the Support Ticket Management System monorepo
+alwaysApply: true
+---
+
+# Project Overview Rule
+
+## What This Project Is
+
+Support Ticket Management System — a production-ready monorepo:
+
+- **Frontend:** React, Vite, TypeScript, TailwindCSS, shadcn/ui, React Router, TanStack Query
+- **Backend:** Python FastAPI, Pydantic, SQLAlchemy, Alembic (Clean Architecture)
+- **Database:** PostgreSQL
+- **Infrastructure:** Docker Compose (`docker compose up --build` starts everything)
+
+## Repository Layout
+
+```
+apps/frontend/     React SPA
+apps/backend/      FastAPI API
+migrations/        Alembic schema history (versions/, env.py)
+docker/            Dockerfiles
+docker-compose.yml
+```
+
+## Architecture Principles
+
+- **Backend:** routers → services → repositories → models. Business rules live in services.
+- **Frontend:** TanStack Query for server state; AuthContext for session; no raw fetch in components.
+- **API:** REST at `/api/v1`, consistent response envelope, JWT + refresh tokens, RBAC in services.
+- **Migrations:** Top-level `migrations/versions/` — never edit applied migrations; add new revisions.
+- **Dependencies:** Backend uses pip + venv (`requirements.txt`); Docker is the primary runtime.
+- **Local dev:** `./harness` (gitignored) runs BE + FE together; copy from `harness.example`.
+- **Linting:** Ruff (Python) + ESLint (JS/TS); run `./scripts/lint.sh` before commit/push.
+
+## Before Making Any Code Changes
+
+Act as a **senior engineer**. Always:
+
+1. **Explore first** — read relevant files, trace call paths, check tests and migrations before editing.
+2. **Match existing patterns** — naming, folder structure, error handling, response format.
+3. **Minimal diff** — smallest change that solves the request; no drive-by refactors.
+4. **Phase awareness** — know which implementation phase the work belongs to; don't skip ahead.
+5. **Test impact** — add or update tests when behavior changes; run affected suites.
+6. **No secrets** — never commit `.env`, credentials, or hardcoded passwords.
+
+## Key Domain Rules
+
+- **Ticket state machine** is enforced server-side; invalid transitions return 400.
+- **Authorization** is role-based (admin, agent, user) and enforced in the service layer.
+- **Users** are seeded initially; design allows full CRUD later.
+
+## Implementation Phases
+
+Work incrementally: Phase 0 (scaffold) → Phase 10 (production). Each phase must leave the app in a working, testable state.
+
+## Phase Completion (required before every push)
+
+When a phase is done:
+
+1. **Test locally** — lint, backend pytest, frontend Vitest, smoke (`./harness smoke` or manual)
+2. **Verify DoD** — blueprint Definition of Done for that phase is met
+3. **Commit** — one phase per branch (`cursor/phase-N-summary`); use conventional commits
+4. **Push** — only after all tests pass locally
+
+See `phase-completion` skill for the full checklist.

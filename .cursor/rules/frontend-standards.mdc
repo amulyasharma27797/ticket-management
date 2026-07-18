@@ -1,0 +1,30 @@
+---
+description: React frontend conventions — TanStack Query, shadcn/ui, protected routes, error handling
+globs: apps/frontend/**/*
+alwaysApply: false
+---
+
+# Frontend Standards
+
+## Data Layer
+
+- API calls in `src/api/` only. Components use TanStack Query hooks, not direct fetch.
+- Mirror backend types in `src/api/types.ts`.
+- Parse API error envelope into typed `ApiError`; show user-friendly messages.
+
+## Components
+
+- Use shadcn/ui + Tailwind; `cn()` for class merging.
+- Functional components; extract hooks for reusable logic.
+- Protected routes via `ProtectedRoute`; auth state in `AuthContext`.
+
+## UX
+
+- Loading and error states on every async view.
+- Form validation aligned with backend rules (title length, password rules, etc.).
+- Dark mode via `ThemeContext`; responsive layout with sidebar navigation.
+
+## Tests
+
+- Vitest + React Testing Library; MSW for API mocking.
+- Test behavior, not implementation details.
