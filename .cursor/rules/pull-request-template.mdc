@@ -1,0 +1,57 @@
+---
+description: Required sections and format for every pull request description
+alwaysApply: true
+---
+
+# Pull Request Template
+
+Every PR description **must** include all five sections below. Do not open a PR with only a summary.
+
+## Required sections
+
+### 1. What
+What changed, concretely — files, endpoints, UI behavior, config.
+
+### 2. Why
+Problem or goal this PR solves; link to phase, issue, or user story when applicable.
+
+### 3. Alternatives considered
+Other approaches evaluated and why they were not chosen. Write "None — straightforward change" only when genuinely true.
+
+### 4. Test cases
+Commands run and manual scenarios verified. Use checkboxes for the test plan.
+
+### 5. Acceptance criteria
+Measurable conditions for merge (DoD). Each item should be checkable by reviewer.
+
+## Template
+
+```markdown
+## What
+- ...
+
+## Why
+...
+
+## Alternatives considered
+- **Option A:** ... — rejected because ...
+- **Option B:** ... — rejected because ...
+- **Chosen:** ...
+
+## Test cases
+- [ ] `./scripts/lint.sh`
+- [ ] `docker compose exec backend python -m pytest`
+- [ ] `cd apps/frontend && npm test`
+- [ ] Manual: ...
+
+## Acceptance criteria
+- [ ] ...
+- [ ] ...
+```
+
+## Workflow
+
+1. Sync feature branch with `main` (`git fetch origin && git merge origin/main`).
+2. Draft the body from `git log` and `git diff main...HEAD`.
+3. Push branch, then `gh pr create` with the full template filled in.
+4. Never substitute "Summary" alone for the five required sections.

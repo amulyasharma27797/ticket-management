@@ -42,6 +42,9 @@ class TicketRepository(BaseRepository[Ticket]):
         *,
         limit: int,
         offset: int,
+        search: str | None = None,
+        status: TicketStatus | None = None,
+        priority: TicketPriority | None = None,
     ) -> tuple[list[Ticket], int]:
         filters = []
         if current_user.role == UserRole.USER:
@@ -51,6 +54,16 @@ class TicketRepository(BaseRepository[Ticket]):
                     Ticket.assigned_to_id == current_user.id,
                 )
             )
+
+        if search:
+            term = f"%{search.strip()}%"
+            filters.append(or_(Ticket.title.ilike(term), Ticket.description.ilike(term)))
+
+        if status is not None:
+            filters.append(Ticket.status == status)
+
+        if priority is not None:
+            filters.append(Ticket.priority == priority)
 
         count_stmt = select(func.count()).select_from(Ticket)
         list_stmt = select(Ticket).order_by(Ticket.updated_at.desc())

@@ -65,4 +65,4 @@ When a phase is done:
 4. **Commit** — one phase per branch (`cursor/phase-N-summary`); use conventional commits
 5. **Push** — only after sync + all tests pass locally
 
-See `phase-completion` skill for the full checklist.
+See `pull-request-template` rule and `pr-description` skill for required PR sections (What, Why, Alternatives, Test cases, Acceptance criteria).

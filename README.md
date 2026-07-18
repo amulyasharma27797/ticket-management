@@ -283,7 +283,7 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | **1** | **Complete** | `cursor/phase-1-database` | ORM models, Alembic migrations, Clean Architecture skeleton |
 | **2** | **Complete** | `cursor/phase-2-auth` | JWT auth, login/register/logout/me, protected routes |
 | **3** | **Complete** | `cursor/phase-3-ticket-crud` | Ticket CRUD — create, detail, patch fields |
-| 4 | Pending | — | Listing, search, filters |
+| 4 | In progress | `cursor/phase-4-listing-search-filters` | Listing, search, filters |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -294,6 +294,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 **Phase 2 (complete):** JWT access + refresh tokens; register/login/logout/me/refresh endpoints; seed users; frontend login/register pages with protected dashboard route.
 
 **Phase 3 (complete):** Ticket create, detail, and patch endpoints for title/description/priority/assign/status; frontend create and detail pages with field-level validation; Kanban board with status management for admins and agents.
+
+**Phase 4 (in progress):** Server-side ticket listing with `search`, `status`, and `priority` query filters plus pagination; dashboard filter bar and debounced header search wired to the API.
 
 ### Changing ticket status
 
@@ -319,7 +321,7 @@ Regular users can view status but cannot change it.
 | 1 | Database models, Alembic migrations **(done)** |
 | 2 | Authentication (JWT, login/register/logout) **(done)** |
 | 3 | Ticket CRUD **(done)** |
-| 4 | Listing, search, filters |
+| 4 | Listing, search, filters **(in progress)** |
 | 5 | Comments |
 | 6 | State machine + integration tests |
 | 7 | Dashboard, responsive UI, dark mode |
