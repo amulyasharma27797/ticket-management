@@ -8,9 +8,11 @@ import KanbanBoard from "../components/tickets/KanbanBoard";
 import TicketFilterBar from "../components/tickets/TicketFilterBar";
 import PageShell from "../components/layout/PageShell";
 import RightSidebar from "../components/layout/RightSidebar";
+import ErrorAlert from "../components/ui/ErrorAlert";
 import { useLayoutSearch } from "../hooks/useLayoutSearch";
 import { useAuth } from "../hooks/useAuth";
-import { parseApiError } from "../utils/authErrors";
+import { useToast } from "../hooks/useToast";
+import { getErrorMessage } from "../utils/authErrors";
 import { canDragTicketOnBoard } from "../utils/ticketPermissions";
 import { canTransitionStatus } from "../utils/ticketTransitions";
 
@@ -44,6 +46,7 @@ const STAT_CONFIG = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { search } = useLayoutSearch();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState<TicketStats>(EMPTY_STATS);
@@ -76,7 +79,10 @@ export default function DashboardPage() {
     setStatsLoading(true);
     fetchTicketStats()
       .then(setStats)
-      .catch(() => setStats(EMPTY_STATS))
+      .catch((err) => {
+        setStats(EMPTY_STATS);
+        setError(getErrorMessage(err, "Failed to load dashboard stats."));
+      })
       .finally(() => setStatsLoading(false));
   }, []);
 
@@ -95,7 +101,7 @@ export default function DashboardPage() {
         setTotal(meta.total);
         setTotalPages(meta.totalPages);
       })
-      .catch(() => setError("Failed to load tickets"))
+      .catch((err) => setError(getErrorMessage(err, "Failed to load tickets.")))
       .finally(() => setLoading(false));
   }, [debouncedSearch, page, priorityFilter, statusFilter]);
 
@@ -117,8 +123,10 @@ export default function DashboardPage() {
     setExportError(null);
     try {
       await downloadMyTicketsCsv();
+      showToast("Tickets exported successfully.");
     } catch (err) {
-      setExportError(parseApiError(err).message ?? "Failed to export tickets.");
+      setExportError(getErrorMessage(err, "Failed to export tickets."));
+      showToast(getErrorMessage(err, "Failed to export tickets."), "error");
     } finally {
       setExporting(false);
     }
@@ -149,7 +157,8 @@ export default function DashboardPage() {
       setTickets((current) =>
         current.map((ticket) => (ticket.id === ticketId ? previous : ticket)),
       );
-      setStatusError(parseApiError(err).message ?? "Failed to update ticket status.");
+      setStatusError(getErrorMessage(err, "Failed to update ticket status."));
+      showToast(getErrorMessage(err, "Failed to update ticket status."), "error");
     } finally {
       setUpdatingTicketId(null);
     }
@@ -217,17 +226,9 @@ export default function DashboardPage() {
               exporting={exporting}
             />
 
-            {exportError ? (
-              <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
-                {exportError}
-              </p>
-            ) : null}
+            {exportError ? <ErrorAlert className="mt-3" message={exportError} /> : null}
 
-            {statusError ? (
-              <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
-                {statusError}
-              </p>
-            ) : null}
+            {statusError ? <ErrorAlert className="mt-3" message={statusError} /> : null}
           </section>
 
           <section className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4 lg:p-5">
@@ -239,8 +240,8 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : error ? (
-              <div className="empty-state h-full border-red-200 bg-red-50 text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
-                {error}
+              <div className="empty-state h-full">
+                <ErrorAlert message={error} onRetry={loadTickets} />
               </div>
             ) : tickets.length === 0 ? (
               <div className="empty-state h-full">

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../api/client";
-import { getAuthErrorMessage, parseApiError } from "../utils/authErrors";
+import { getAuthErrorMessage, getErrorMessage, parseApiError } from "../utils/authErrors";
 
 describe("parseApiError", () => {
   it("maps validation details to field errors", () => {
@@ -23,7 +23,20 @@ describe("parseApiError", () => {
     const parsed = parseApiError(error);
 
     expect(parsed.message).toBe("Invalid email or password");
+    expect(parsed.code).toBe("UNAUTHORIZED");
     expect(parsed.fieldErrors).toEqual({});
+  });
+
+  it("maps known error codes to friendly messages", () => {
+    const error = new ApiError("Invalid ticket status transition", "INVALID_STATUS_TRANSITION");
+
+    expect(getErrorMessage(error)).toBe("That status change is not allowed for this ticket.");
+  });
+
+  it("prefers specific server messages over generic friendly codes", () => {
+    const error = new ApiError("Invalid email or password", "UNAUTHORIZED");
+
+    expect(getErrorMessage(error)).toBe("Invalid email or password");
   });
 });
 

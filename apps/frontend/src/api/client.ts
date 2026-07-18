@@ -34,21 +34,41 @@ export function clearTokens(): void {
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
+async function parseJsonBody<T>(response: Response): Promise<T | null> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    return null;
+  }
+
+  return (await response.json()) as T;
+}
+
+function buildApiError(response: Response, body: ApiResponse<unknown> | null): ApiError {
+  return new ApiError(
+    body?.error?.message ?? `HTTP ${response.status}`,
+    body?.error?.code ?? "UNKNOWN_ERROR",
+    body?.error?.details ?? [],
+  );
+}
+
+function handleUnauthorized(response: Response, retry: boolean): boolean {
+  if (response.status !== 401 || retry) {
+    return false;
+  }
+  clearTokens();
+  return true;
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) {
     return undefined as T;
   }
 
-  const body = (await response.json()) as ApiResponse<T>;
-  if (!response.ok || body.success === false) {
-    const apiError = new ApiError(
-      body.error?.message ?? `HTTP ${response.status}`,
-      body.error?.code ?? "UNKNOWN_ERROR",
-      body.error?.details ?? [],
-    );
-    throw apiError;
+  const body = await parseJsonBody<ApiResponse<T>>(response);
+  if (!response.ok || body?.success === false) {
+    throw buildApiError(response, body);
   }
-  return body.data as T;
+  return body?.data as T;
 }
 
 export async function apiFetchEnvelope<T>(
@@ -75,20 +95,18 @@ export async function apiFetchEnvelope<T>(
     }
   }
 
+  handleUnauthorized(response, retry);
+
   if (response.status === 204) {
     return { data: undefined as T };
   }
 
-  const body = (await response.json()) as ApiResponse<T>;
-  if (!response.ok || body.success === false) {
-    throw new ApiError(
-      body.error?.message ?? `HTTP ${response.status}`,
-      body.error?.code ?? "UNKNOWN_ERROR",
-      body.error?.details ?? [],
-    );
+  const body = await parseJsonBody<ApiResponse<T>>(response);
+  if (!response.ok || body?.success === false) {
+    throw buildApiError(response, body);
   }
 
-  return { data: body.data as T, meta: body.meta };
+  return { data: body?.data as T, meta: body?.meta };
 }
 
 async function refreshAccessToken(): Promise<string | null> {
@@ -137,6 +155,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, retry = 
     }
   }
 
+  handleUnauthorized(response, retry);
+
   return parseResponse<T>(response);
 }
 
@@ -161,15 +181,9 @@ export async function apiDownloadBlob(
   }
 
   if (!response.ok) {
-    try {
-      await parseResponse<never>(response);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      throw new ApiError(`HTTP ${response.status}`, "UNKNOWN_ERROR");
-    }
-    throw new ApiError(`HTTP ${response.status}`, "UNKNOWN_ERROR");
+    handleUnauthorized(response, retry);
+    const body = await parseJsonBody<ApiResponse<never>>(response);
+    throw buildApiError(response, body);
   }
 
   return {
