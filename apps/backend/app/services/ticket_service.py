@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ForbiddenError, NotFoundError, TicketNotEditableError
-from app.models.enums import TicketStatus, UserRole
+from app.models.enums import TicketPriority, TicketStatus, UserRole
 from app.models.ticket import Ticket
 from app.models.user import User
 from app.repositories.ticket_repository import TicketRepository
@@ -47,10 +47,20 @@ class TicketService:
         *,
         page: int = 1,
         page_size: int = 50,
+        search: str | None = None,
+        status: TicketStatus | None = None,
+        priority: TicketPriority | None = None,
     ) -> tuple[list[TicketResponse], dict[str, int]]:
         limit = min(page_size, 100)
         offset = (page - 1) * limit
-        tickets, total = self.tickets.list_visible(current_user, limit=limit, offset=offset)
+        tickets, total = self.tickets.list_visible(
+            current_user,
+            limit=limit,
+            offset=offset,
+            search=search,
+            status=status,
+            priority=priority,
+        )
         total_pages = ceil(total / limit) if total else 0
         meta = {
             "page": page,

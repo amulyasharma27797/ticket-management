@@ -2,13 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { fetchTickets, updateTicketStatus } from "../api/tickets";
-import type { Ticket, TicketStatus } from "../api/ticketTypes";
+import type { Ticket, TicketPriority, TicketStatus } from "../api/ticketTypes";
 import KanbanBoard from "../components/tickets/KanbanBoard";
+import TicketFilterBar from "../components/tickets/TicketFilterBar";
 import { useLayoutSearch } from "../hooks/useLayoutSearch";
 import { useAuth } from "../hooks/useAuth";
 import { parseApiError } from "../utils/authErrors";
 import { canDragTicketOnBoard } from "../utils/ticketPermissions";
 import { canTransitionStatus } from "../utils/ticketTransitions";
+
+const PAGE_SIZE = 50;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -18,40 +22,56 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<TicketStatus | "">("");
+  const [priorityFilter, setPriorityFilter] = useState<TicketPriority | "">("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
 
   const canDrag = canDragTicketOnBoard(user);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter, priorityFilter]);
+
   const loadTickets = useCallback(() => {
     setLoading(true);
-    fetchTickets()
-      .then(setTickets)
+    setError(null);
+    fetchTickets({
+      page,
+      pageSize: PAGE_SIZE,
+      search: debouncedSearch,
+      status: statusFilter || undefined,
+      priority: priorityFilter || undefined,
+    })
+      .then(({ tickets: nextTickets, meta }) => {
+        setTickets(nextTickets);
+        setTotal(meta.total);
+        setTotalPages(meta.totalPages);
+      })
       .catch(() => setError("Failed to load tickets"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [debouncedSearch, page, priorityFilter, statusFilter]);
 
   useEffect(() => {
     loadTickets();
   }, [loadTickets]);
 
-  const filteredTickets = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return tickets;
-    return tickets.filter(
-      (ticket) =>
-        ticket.title.toLowerCase().includes(query) ||
-        ticket.description.toLowerCase().includes(query),
-    );
-  }, [search, tickets]);
-
   const stats = useMemo(
     () => ({
-      open: filteredTickets.filter((ticket) => ticket.status === "open").length,
-      inProgress: filteredTickets.filter((ticket) => ticket.status === "in_progress").length,
-      pending: filteredTickets.filter((ticket) => ticket.status === "resolved").length,
-      completed: filteredTickets.filter((ticket) => ticket.status === "closed").length,
-      cancelled: filteredTickets.filter((ticket) => ticket.status === "cancelled").length,
+      open: tickets.filter((ticket) => ticket.status === "open").length,
+      inProgress: tickets.filter((ticket) => ticket.status === "in_progress").length,
+      pending: tickets.filter((ticket) => ticket.status === "resolved").length,
+      completed: tickets.filter((ticket) => ticket.status === "closed").length,
+      cancelled: tickets.filter((ticket) => ticket.status === "cancelled").length,
     }),
-    [filteredTickets],
+    [tickets],
   );
 
   const statItems = [
@@ -61,6 +81,11 @@ export default function DashboardPage() {
     { label: "Completed", value: stats.completed },
     { label: "Cancelled", value: stats.cancelled },
   ];
+
+  function handleClearFilters() {
+    setStatusFilter("");
+    setPriorityFilter("");
+  }
 
   async function handleStatusChange(ticketId: string, status: TicketStatus) {
     const previous = tickets.find((ticket) => ticket.id === ticketId);
@@ -79,6 +104,9 @@ export default function DashboardPage() {
     try {
       const updated = await updateTicketStatus(ticketId, status);
       setTickets((current) => current.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
+      if (statusFilter && updated.status !== statusFilter) {
+        loadTickets();
+      }
     } catch (err) {
       setTickets((current) =>
         current.map((ticket) => (ticket.id === ticketId ? previous : ticket)),
@@ -120,6 +148,19 @@ export default function DashboardPage() {
             + Create ticket
           </Link>
         </div>
+
+        <TicketFilterBar
+          status={statusFilter}
+          priority={priorityFilter}
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          onStatusChange={setStatusFilter}
+          onPriorityChange={setPriorityFilter}
+          onClear={handleClearFilters}
+          onPageChange={setPage}
+        />
+
         {statusError ? <p className="mt-4 text-sm text-red-500">{statusError}</p> : null}
       </section>
 
@@ -132,9 +173,13 @@ export default function DashboardPage() {
           <div className="flex h-full items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shadow-sm">
             {error}
           </div>
+        ) : tickets.length === 0 ? (
+          <div className="flex h-full items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm">
+            No tickets match your search or filters.
+          </div>
         ) : (
           <KanbanBoard
-            tickets={filteredTickets}
+            tickets={tickets}
             canDrag={canDrag}
             onStatusChange={handleStatusChange}
             updatingTicketId={updatingTicketId}

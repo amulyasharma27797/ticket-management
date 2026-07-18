@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_db
 from app.core.responses import success_response
+from app.models.enums import TicketPriority, TicketStatus
 from app.models.user import User
 from app.schemas.ticket import (
     TicketAssignRequest,
@@ -37,6 +38,9 @@ def create_ticket(
 def list_tickets(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100, alias="pageSize"),
+    search: str | None = Query(None, max_length=200),
+    status: TicketStatus | None = None,
+    priority: TicketPriority | None = None,
     current_user: User = Depends(get_current_user),
     ticket_service: TicketService = Depends(get_ticket_service),
 ) -> dict:
@@ -44,6 +48,9 @@ def list_tickets(
         current_user,
         page=page,
         page_size=page_size,
+        search=search,
+        status=status,
+        priority=priority,
     )
     return success_response(
         [ticket.model_dump(by_alias=True) for ticket in tickets],

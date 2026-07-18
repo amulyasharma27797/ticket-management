@@ -1,65 +1,53 @@
 ---
 name: pr-description
-description: Generate a concise PR description in Markdown from branch changes. Use when the user asks for a pull request description, PR body, or opening a PR.
+description: Generate a pull request description with What, Why, Alternatives, Test cases, and Acceptance criteria. Use when opening or updating a PR.
 ---
 
 # PR Description
 
-Generate a concise PR description.
+Generate a PR description that follows the project template in `.cursor/rules/pull-request-template.mdc`.
 
-## Include
+## Required sections (all five)
 
-- Summary
-- Changes made
-- Testing performed
-- Screenshots (if UI changes)
-- Breaking changes
-- Related issues
-
-Use Markdown.
+1. **What** — concrete changes (APIs, UI, files, config)
+2. **Why** — problem, goal, or phase requirement
+3. **Alternatives considered** — options evaluated and why rejected
+4. **Test cases** — commands run + manual scenarios (checkboxes)
+5. **Acceptance criteria** — measurable merge conditions (checkboxes)
 
 ## Workflow
 
-1. Run `./scripts/lint.sh` — ensure lint passes before drafting the PR.
-2. Inspect `git log` and `git diff` against the base branch (usually `main`).
-3. Summarize the **why**, not just the **what**.
-4. List concrete changes by area (backend, frontend, infra, tests).
-5. Document tests run and their results (include `./scripts/lint.sh`).
-6. Note breaking changes explicitly, or state "None".
-7. Link related issues if known (e.g. `Closes #123`).
+1. Sync with `main` per `git-sync-with-main` rule.
+2. Run `./scripts/lint.sh` before drafting.
+3. Inspect `git log` and `git diff main...HEAD`.
+4. Fill every section; do not leave placeholders.
+5. Open PR via `gh pr create` with HEREDOC body.
 
 ## Template
 
 ```markdown
-## Summary
+## What
+- <bullet list of changes>
 
-<1-3 sentences on purpose and outcome>
+## Why
+<1–3 sentences on motivation>
 
-## Changes made
+## Alternatives considered
+- **<Option A>:** <brief> — rejected because <reason>
+- **Chosen:** <what this PR does> — <why best fit>
 
-- <change 1>
-- <change 2>
-
-## Testing performed
-
+## Test cases
 - [ ] `./scripts/lint.sh`
-- [ ] <test command or manual step>
+- [ ] <backend/frontend test commands>
+- [ ] Manual: <scenario>
 
-## Screenshots
-
-<!-- Include only for UI changes; otherwise write "N/A" -->
-
-## Breaking changes
-
-<None | description of breaking change and migration steps>
-
-## Related issues
-
-<None | #issue-number>
+## Acceptance criteria
+- [ ] <checkable condition>
+- [ ] <checkable condition>
 ```
 
 ## Guidelines
 
-- Keep the summary scannable; use bullet lists for changes.
-- Mention new env vars, migrations, or Docker changes prominently.
-- For migration PRs, note whether `alembic upgrade head` is required.
+- Mention migrations, env vars, and Docker changes under **What**.
+- For UI PRs, note manual flows under **Test cases** (no screenshot required unless user asks).
+- **Alternatives considered** must be honest; skip only when change is trivial and document that explicitly.

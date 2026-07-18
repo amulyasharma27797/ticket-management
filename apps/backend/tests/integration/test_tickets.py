@@ -183,6 +183,109 @@ def test_list_tickets(client: TestClient, auth_headers) -> None:
     assert body["meta"]["total"] >= 1
 
 
+def test_list_tickets_filter_by_status(client: TestClient) -> None:
+    admin = _register(client, role=UserRole.ADMIN)
+    headers = _auth_header(admin)
+    ticket = _create_ticket(client, headers)
+    client.patch(
+        f"/api/v1/tickets/{ticket['id']}/status",
+        headers=headers,
+        json={"status": "in_progress"},
+    )
+
+    open_response = client.get("/api/v1/tickets?status=open", headers=headers)
+    in_progress_response = client.get("/api/v1/tickets?status=in_progress", headers=headers)
+
+    assert open_response.status_code == 200
+    assert all(item["status"] == "open" for item in open_response.json()["data"])
+    assert in_progress_response.status_code == 200
+    assert any(item["id"] == ticket["id"] for item in in_progress_response.json()["data"])
+
+
+def test_list_tickets_filter_by_priority(client: TestClient, auth_headers) -> None:
+    headers = auth_headers()
+    ticket = _create_ticket(client, headers)
+    client.patch(
+        f"/api/v1/tickets/{ticket['id']}/priority",
+        headers=headers,
+        json={"priority": "critical"},
+    )
+
+    response = client.get("/api/v1/tickets?priority=critical", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["meta"]["total"] >= 1
+    assert all(item["priority"] == "critical" for item in body["data"])
+
+
+def test_list_tickets_search_by_title(client: TestClient, auth_headers) -> None:
+    headers = auth_headers()
+    ticket = _create_ticket(client, headers)
+
+    response = client.get("/api/v1/tickets?search=Login", headers=headers)
+
+    assert response.status_code == 200
+    ids = [item["id"] for item in response.json()["data"]]
+    assert ticket["id"] in ids
+
+
+def test_list_tickets_search_by_description(client: TestClient, auth_headers) -> None:
+    headers = auth_headers()
+    ticket = _create_ticket(client, headers)
+
+    response = client.get("/api/v1/tickets?search=password%20reset", headers=headers)
+
+    assert response.status_code == 200
+    ids = [item["id"] for item in response.json()["data"]]
+    assert ticket["id"] in ids
+
+
+def test_list_tickets_pagination(client: TestClient, auth_headers) -> None:
+    headers = auth_headers()
+    for index in range(3):
+        client.post(
+            "/api/v1/tickets",
+            headers=headers,
+            json={
+                "title": f"Pagination ticket {index}",
+                "description": "Ticket created to verify pagination behavior.",
+                "priority": "low",
+            },
+        )
+
+    page_one = client.get("/api/v1/tickets?page=1&pageSize=2", headers=headers)
+    page_two = client.get("/api/v1/tickets?page=2&pageSize=2", headers=headers)
+
+    assert page_one.status_code == 200
+    assert page_two.status_code == 200
+    assert len(page_one.json()["data"]) == 2
+    assert page_one.json()["meta"]["page"] == 1
+    assert page_one.json()["meta"]["pageSize"] == 2
+    assert page_one.json()["meta"]["total"] >= 3
+    assert page_one.json()["meta"]["totalPages"] >= 2
+
+    page_one_ids = {item["id"] for item in page_one.json()["data"]}
+    page_two_ids = {item["id"] for item in page_two.json()["data"]}
+    assert page_one_ids.isdisjoint(page_two_ids)
+
+
+def test_list_tickets_user_visibility_with_filters(client: TestClient) -> None:
+    owner = _register(client)
+    other = _register(client)
+    owner_headers = _auth_header(owner)
+    other_headers = _auth_header(other)
+    ticket = _create_ticket(client, owner_headers)
+
+    owner_response = client.get("/api/v1/tickets?search=Login", headers=owner_headers)
+    other_response = client.get("/api/v1/tickets?search=Login", headers=other_headers)
+
+    assert owner_response.status_code == 200
+    assert any(item["id"] == ticket["id"] for item in owner_response.json()["data"])
+    assert other_response.status_code == 200
+    assert all(item["id"] != ticket["id"] for item in other_response.json()["data"])
+
+
 def test_update_status_admin(client: TestClient) -> None:
     admin = _register(client, role=UserRole.ADMIN)
     ticket = _create_ticket(client, _auth_header(admin))

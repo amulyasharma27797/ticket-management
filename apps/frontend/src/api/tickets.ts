@@ -1,9 +1,22 @@
 import { apiFetch, apiFetchEnvelope } from "./client";
-import type { Ticket, TicketCreateInput, TicketPriority, TicketStatus } from "./ticketTypes";
+import type {
+  Ticket,
+  TicketCreateInput,
+  TicketListMeta,
+  TicketListParams,
+  TicketPriority,
+  TicketStatus,
+} from "./ticketTypes";
+import { buildTicketListQuery } from "../utils/ticketListQuery";
 
-export async function fetchTickets(page = 1, pageSize = 100): Promise<Ticket[]> {
-  const { data } = await apiFetchEnvelope<Ticket[]>(`/tickets?page=${page}&pageSize=${pageSize}`);
-  return data;
+export async function fetchTickets(
+  params: TicketListParams = {},
+): Promise<{ tickets: Ticket[]; meta: TicketListMeta }> {
+  const { data, meta } = await apiFetchEnvelope<Ticket[]>(`/tickets${buildTicketListQuery(params)}`);
+  return {
+    tickets: data,
+    meta: meta as TicketListMeta,
+  };
 }
 
 export async function createTicket(payload: TicketCreateInput): Promise<Ticket> {
