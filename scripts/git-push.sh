@@ -39,8 +39,9 @@ REMOTE="https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/ticket-
 
 if [[ $# -eq 0 ]]; then
   BRANCH="$(git branch --show-current)"
-  set -- -u origin "${BRANCH}"
+  set -- "${BRANCH}:${BRANCH}"
 fi
 
 echo "Pushing to github.com/${GITHUB_USER}/ticket-management.git ..."
 git push "${REMOTE}" "$@"
+git branch --set-upstream-to=origin/"$(git branch --show-current)" 2>/dev/null || true
