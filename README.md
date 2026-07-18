@@ -237,15 +237,27 @@ Cursor also runs lint before `git commit` and `git push` via `.cursor/hooks.json
 ## Testing
 
 ```bash
-# Backend
-docker compose exec backend pytest
-docker compose exec backend pytest --cov=app --cov-report=term-missing
+# Backend (requires Postgres — start with: docker compose up -d postgres)
+# Point DATABASE_URL at the Docker network host when running from your machine:
+DATABASE_URL=postgresql+psycopg2://ticket_user:change_me@localhost:5432/ticket_db ./scripts/test-backend.sh -v
+./scripts/test-backend.sh --cov=app --cov-report=term-missing
 
 # Frontend
 cd apps/frontend && npm test
 ```
 
-Tests are added incrementally per implementation phase. State machine transitions require parametrized integration tests (valid and invalid).
+State machine transitions require parametrized integration tests (valid and invalid).
+
+### CI
+
+GitHub Actions runs on every push to `main` and on pull requests:
+
+- **lint** — Ruff (Python) + ESLint (frontend)
+- **backend** — pytest with Postgres service, migrations, and ≥70% coverage gate
+- **frontend** — Vitest + production build
+- **docker** — `docker compose build`
+
+Workflow file: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
 
 ## Ticket State Machine
 
@@ -288,7 +300,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | **6** | **Complete** | `cursor/phase-6-state-machine` | State machine + integration tests |
 | **7** | **Complete** | `cursor/phase-7-dashboard-dark-mode` | Dashboard, responsive UI, dark mode |
 | **8** | **Complete** | `cursor/phase-8-csv-export` | CSV export of self-created tickets |
-| 9 | In progress | `cursor/phase-9-error-handling` | Error handling and API polish |
+| **9** | **Complete** | `cursor/phase-9-error-handling` | Error handling and API polish |
+| **10** | **Complete** | `cursor/phase-10-production` | CI, Docker hardening, users admin stub |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -310,7 +323,48 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 
 **Phase 8 (complete):** `GET /tickets/export` returns a CSV of tickets created by the current user; dashboard **Export my tickets** button downloads the file.
 
-**Phase 9 (in progress):** Consistent API error envelopes with `X-Request-ID`, shared `ErrorAlert`/toast UI, and user-friendly frontend error messages.
+**Phase 9 (complete):** Consistent API error envelopes with `X-Request-ID`, shared `ErrorAlert`/toast UI, and user-friendly frontend error messages.
+
+**Phase 10 (complete):** GitHub Actions CI (lint, pytest with coverage, frontend build, Docker build), multi-stage production Docker images with non-root backend, admin `GET /users` endpoints, and `./scripts/test-backend.sh` for local backend tests.
+
+### API examples
+
+**Register and login**
+
+```bash
+curl -s -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Jane Doe","email":"jane@example.com","password":"Password1"}'
+
+curl -s -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"jane@example.com","password":"Password1"}'
+```
+
+**Create a ticket** (replace `TOKEN`)
+
+```bash
+curl -s -X POST http://localhost:8000/api/v1/tickets \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"VPN issue","description":"Cannot connect to office VPN from home.","priority":"high"}'
+```
+
+**List tickets with filters**
+
+```bash
+curl -s "http://localhost:8000/api/v1/tickets?status=open&priority=high&page=1&pageSize=20" \
+  -H "Authorization: Bearer TOKEN"
+```
+
+**Export my tickets (CSV)**
+
+```bash
+curl -s -H "Authorization: Bearer TOKEN" \
+  http://localhost:8000/api/v1/tickets/export -o my-tickets.csv
+```
+
+All JSON responses use `{ "success": true, "data": ... }` or `{ "success": false, "error": { "code", "message", "details" } }`.
 
 ### Changing ticket status
 
@@ -341,8 +395,8 @@ Regular users can view status but cannot change it.
 | 6 | State machine + integration tests **(done)** |
 | 7 | Dashboard, responsive UI, dark mode **(done)** |
 | 8 | CSV export **(done)** |
-| 9 | Error handling and API polish **(in progress)** |
-| 10 | CI, full test suite, production readiness |
+| 9 | Error handling and API polish **(done)** |
+| 10 | CI, full test suite, production readiness **(done)** |
 
 ## Phase Completion Workflow
 
@@ -355,7 +409,7 @@ Each phase is implemented, **tested thoroughly locally**, then **committed and p
 ./scripts/lint.sh
 
 # 2. Backend tests
-docker compose exec backend pytest -v
+./scripts/test-backend.sh -v
 
 # 3. Frontend tests
 cd apps/frontend && npm test

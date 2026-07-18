@@ -37,3 +37,12 @@ line-ending = "auto"
 [tool.pytest.ini_options]
 testpaths = ["apps/backend/tests"]
 pythonpath = ["apps/backend"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/scripts/*"]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+skip_covered = false
