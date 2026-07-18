@@ -1,0 +1,46 @@
+---
+description: Linting standards — Ruff for Python, ESLint for JS/TS; run before commits and pushes
+globs: "**/*.{py,ts,tsx,js,jsx}"
+alwaysApply: false
+---
+
+# Linting Standards
+
+## Tools
+
+| Language | Tool | Config |
+|----------|------|--------|
+| Python | Ruff (lint + format) | `pyproject.toml` |
+| JS/TS/TSX | ESLint 9 | `apps/frontend/eslint.config.js` |
+
+## When to Lint
+
+- **Before every commit** — `./scripts/lint.sh --staged` (enforced by pre-commit hook)
+- **Before every push** — `./scripts/lint.sh` (enforced by pre-push hook)
+- **Before generating commit messages** — agent runs lint first
+- **After editing Python or frontend files** — fix lint errors before marking work complete
+
+## Commands
+
+```bash
+./scripts/lint.sh              # full lint
+./scripts/lint.sh --staged     # staged files only
+./scripts/lint.sh --fix        # auto-fix
+./scripts/lint.sh --python     # ruff only
+./scripts/lint.sh --js         # eslint only
+```
+
+## Setup (one-time)
+
+```bash
+chmod +x scripts/lint.sh scripts/setup-githooks.sh
+./scripts/setup-githooks.sh    # install pre-commit + pre-push hooks
+pip install ruff               # or via apps/backend/requirements-dev.txt
+cd apps/frontend && npm install
+```
+
+## Agent Skills
+
+- `ruff-lint` — Python linting workflow
+- `eslint-check` — Frontend linting workflow
+- `git-commit-messages` — requires lint pass before generating message

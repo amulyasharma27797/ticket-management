@@ -1,0 +1,37 @@
+---
+description: FastAPI backend conventions — Clean Architecture, services, repositories, API envelope
+globs: apps/backend/**/*
+alwaysApply: false
+---
+
+# Backend Standards
+
+## Layer Rules
+
+- **Routers:** HTTP only — parse input, call service, return envelope. No business logic.
+- **Services:** Business rules, authorization, state machine, orchestration.
+- **Repositories:** SQLAlchemy queries only. No HTTP or Pydantic response shaping.
+- **Schemas:** Pydantic DTOs at API boundary. Never return ORM models from routers.
+
+## API Response Envelope
+
+```python
+# Success: { "success": true, "data": ..., "meta": ... }
+# Error:   { "success": false, "error": { "code", "message", "details" } }
+```
+
+## Auth & Security
+
+- JWT access + refresh tokens; sessions stored hashed in DB.
+- RBAC checks in services, not only route decorators.
+- Validate all input via Pydantic; return 422 for schema errors, 400 for business rule violations.
+
+## Database
+
+- Models in `app/models/`; migrations in repo-root `migrations/versions/`.
+- Use UUID primary keys; bump `updated_at` on mutations.
+
+## Tests
+
+- Integration tests use real PostgreSQL test DB with transaction rollback.
+- Parametrize state machine and RBAC matrices.

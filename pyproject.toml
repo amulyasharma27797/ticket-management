@@ -1,0 +1,35 @@
+[project]
+name = "ticket-management-backend"
+version = "0.1.0"
+description = "Support Ticket Management System — backend"
+requires-python = ">=3.12"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["apps/backend"]
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "RUF",    # ruff-specific
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+testpaths = ["apps/backend/tests"]
+pythonpath = ["apps/backend"]

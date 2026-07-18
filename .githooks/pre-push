@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Pre-push: full lint before pushing to remote
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+exec "${ROOT_DIR}/scripts/lint.sh"

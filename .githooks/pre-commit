@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Pre-commit: lint staged Python and JS/TS files
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+exec "${ROOT_DIR}/scripts/lint.sh" --staged

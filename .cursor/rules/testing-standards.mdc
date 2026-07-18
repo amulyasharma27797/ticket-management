@@ -1,0 +1,42 @@
+---
+description: Testing requirements — pytest integration tests, Vitest, per-phase test coverage
+globs: "**/*.{py,ts,tsx}"
+alwaysApply: false
+---
+
+# Testing Standards
+
+## When Tests Are Required
+
+- Any behavior or business rule change → add or update tests in the same change.
+- State machine changes → parametrized valid/invalid transition tests (mandatory).
+- New API endpoints → integration test for success, auth, validation, and forbidden cases.
+
+## Backend
+
+- `pytest` + `httpx.AsyncClient`; fixtures in `tests/conftest.py`.
+- Unit tests for pure logic (`state_machine`, validation, CSV formatting).
+- Target ≥90% coverage on `app/services/`.
+
+## Frontend
+
+- Vitest for hooks, API client, and key components (`ProtectedRoute`, forms, filters).
+- E2E (Playwright) optional for full flows in Phase 10.
+
+## Running
+
+```bash
+docker compose exec backend pytest
+cd apps/frontend && npm test
+```
+
+## Phase Completion Gate
+
+Before committing or pushing at the end of a phase:
+
+1. `./scripts/lint.sh` — must pass
+2. Backend + frontend test suites — must pass
+3. App boots and phase features work (manual or `./harness smoke`)
+4. Phase-specific tests from blueprint Section 15 — must pass
+
+Do not push until all checks pass. Use the `phase-completion` skill for the full checklist.

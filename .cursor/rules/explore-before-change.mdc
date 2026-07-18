@@ -1,0 +1,18 @@
+---
+description: Require thorough codebase exploration before any code changes — senior engineer discipline
+alwaysApply: true
+---
+
+# Explore Before Change
+
+Before writing or editing code:
+
+1. **Locate** — find existing implementations of similar features (grep, file tree, imports).
+2. **Read** — open the files you will touch plus their callers and dependencies.
+3. **Understand** — identify patterns for errors, validation, auth, DB access, and API responses.
+4. **Plan** — state what will change and why; confirm scope matches the request.
+5. **Verify** — check tests, migrations, and Docker config that may be affected.
+
+Do not guess at APIs, schemas, or folder conventions. If unsure, read more code first.
+
+When extending a feature, follow the same layer boundaries (router → service → repository) and frontend data flow (api → hook → component).

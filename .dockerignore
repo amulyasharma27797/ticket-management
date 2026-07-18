@@ -1,0 +1,15 @@
+# Docker build context — exclude local artifacts from image layers
+.git
+**/.venv
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.harness
+harness
+harness.config
+.env
+*.pyc
+apps/frontend/dist
+coverage
+htmlcov
