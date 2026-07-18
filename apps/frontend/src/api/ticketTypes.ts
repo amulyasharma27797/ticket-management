@@ -62,3 +62,9 @@ export type TicketListMeta = {
   total: number;
   totalPages: number;
 };
+
+export type TicketStats = {
+  total: number;
+  byStatus: Record<TicketStatus, number>;
+  byPriority: Record<TicketPriority, number>;
+};

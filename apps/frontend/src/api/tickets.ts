@@ -5,6 +5,7 @@ import type {
   TicketListMeta,
   TicketListParams,
   TicketPriority,
+  TicketStats,
   TicketStatus,
 } from "./ticketTypes";
 import { buildTicketListQuery } from "../utils/ticketListQuery";
@@ -17,6 +18,10 @@ export async function fetchTickets(
     tickets: data,
     meta: meta as TicketListMeta,
   };
+}
+
+export async function fetchTicketStats(): Promise<TicketStats> {
+  return apiFetch<TicketStats>("/tickets/stats");
 }
 
 export async function createTicket(payload: TicketCreateInput): Promise<Ticket> {

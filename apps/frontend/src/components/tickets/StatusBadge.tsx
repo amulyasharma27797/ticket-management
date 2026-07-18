@@ -1,11 +1,11 @@
 import { TICKET_STATUS_LABELS, type TicketStatus } from "../../api/ticketTypes";
 
 const STYLES: Record<TicketStatus, string> = {
-  open: "bg-slate-100 text-slate-700",
-  in_progress: "bg-sky-100 text-sky-800",
-  resolved: "bg-indigo-100 text-indigo-800",
-  closed: "bg-emerald-100 text-emerald-800",
-  cancelled: "bg-rose-100 text-rose-800",
+  open: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  in_progress: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+  resolved: "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300",
+  closed: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+  cancelled: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
 };
 
 type StatusBadgeProps = {
@@ -15,7 +15,7 @@ type StatusBadgeProps = {
 export default function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <span
-      className={`rounded-full px-3 py-1 text-xs font-medium uppercase ${STYLES[status]}`}
+      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${STYLES[status]}`}
     >
       {TICKET_STATUS_LABELS[status]}
     </span>

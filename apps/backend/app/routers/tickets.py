@@ -58,6 +58,15 @@ def list_tickets(
     )
 
 
+@router.get("/stats")
+def get_ticket_stats(
+    current_user: User = Depends(get_current_user),
+    ticket_service: TicketService = Depends(get_ticket_service),
+) -> dict:
+    stats = ticket_service.get_ticket_stats(current_user)
+    return success_response(stats.model_dump(by_alias=True))
+
+
 @router.get("/{ticket_id}")
 def get_ticket(
     ticket_id: UUID,

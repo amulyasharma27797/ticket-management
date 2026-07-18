@@ -2,13 +2,468 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes auth-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-22px) scale(1.04);
+  }
+}
+
+@keyframes auth-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(14px, -16px) rotate(2deg);
+  }
+  66% {
+    transform: translate(-10px, -24px) rotate(-2deg);
+  }
+}
+
+@keyframes auth-sparkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes mesh-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes kanban-drop-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(14 165 233 / 0.35),
+      0 8px 32px -8px rgb(14 165 233 / 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgb(14 165 233 / 0.55),
+      0 12px 40px -4px rgb(14 165 233 / 0.35);
+  }
+}
+
+@keyframes kanban-drop-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes kanban-success-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgb(16 185 129 / 0.55);
+  }
+  40% {
+    box-shadow: 0 0 28px 6px rgb(16 185 129 / 0.35);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+@keyframes ticket-placeholder-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    border-color: rgb(14 165 233 / 0.35);
+  }
+  50% {
+    opacity: 0.85;
+    border-color: rgb(14 165 233 / 0.65);
+  }
+}
+
+@keyframes drop-indicator-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
   .page-gradient {
-    @apply bg-gradient-to-br from-slate-100 via-slate-50 to-sky-50 text-slate-900;
+    @apply bg-gradient-to-br from-slate-50 via-white to-sky-50/80 text-slate-900;
+    @apply dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 dark:text-slate-100;
+  }
+
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-sky-600 dark:text-sky-400;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/60 bg-white/70 shadow-card backdrop-blur-xl;
+    @apply dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-none;
+  }
+
+  .glass-panel {
+    @apply border border-white/50 bg-white/50 backdrop-blur-md;
+    @apply dark:border-slate-800/80 dark:bg-slate-900/50;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-sky-500/25 transition;
+    @apply hover:from-sky-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-sky-500/30 hover:-translate-y-0.5;
+    @apply focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+    @apply disabled:pointer-events-none disabled:opacity-60 disabled:shadow-none disabled:translate-y-0;
+  }
+
+  .btn-primary-full {
+    @apply btn-primary w-full;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl border border-slate-200/80 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition;
+    @apply hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700;
+    @apply dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:border-sky-700 dark:hover:bg-slate-800;
+  }
+
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl border border-white/70 bg-white/80 p-4 shadow-card backdrop-blur-sm transition hover:shadow-card-hover hover:-translate-y-0.5;
+    @apply dark:border-slate-700/60 dark:bg-slate-800/80;
+  }
+
+  .stat-card-accent {
+    @apply absolute inset-y-0 left-0 w-1 rounded-l-2xl;
+  }
+
+  .page-card {
+    @apply glass-card p-6 sm:p-8;
+  }
+
+  .auth-mesh {
+    background:
+      radial-gradient(ellipse 70% 55% at 15% 15%, rgb(14 116 144 / 0.18), transparent 55%),
+      radial-gradient(ellipse 55% 45% at 85% 25%, rgb(67 56 202 / 0.14), transparent 55%),
+      linear-gradient(155deg, rgb(2 6 23) 0%, rgb(15 23 42) 50%, rgb(2 6 23) 100%);
+    background-size: 200% 200%;
+    animation: mesh-shift 10s ease-in-out infinite;
+  }
+
+  .auth-brand-overlay {
+    @apply pointer-events-none absolute inset-0 z-[1] bg-slate-950/40;
+  }
+
+  .auth-brand-graphics {
+    @apply opacity-90;
+  }
+
+  .auth-graphic-float {
+    animation: auth-float 4s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .auth-graphic-float-delayed {
+    animation: auth-float 4s ease-in-out 0.6s infinite;
+    will-change: transform;
+  }
+
+  .auth-graphic-float-slow {
+    animation: auth-float 5s ease-in-out 0.3s infinite;
+    will-change: transform;
+  }
+
+  .auth-graphic-drift {
+    animation: auth-drift 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .auth-graphic-pulse {
+    animation: auth-sparkle 1.5s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  .auth-graphic-pulse-delayed {
+    animation: auth-sparkle 1.5s ease-in-out 0.75s infinite;
+    will-change: transform, opacity;
+  }
+
+  .auth-form-dots {
+    background-image: radial-gradient(rgb(14 165 233 / 0.15) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .app-page-dots {
+    background-image: radial-gradient(rgb(14 165 233 / 0.12) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .dark .app-page-dots {
+    background-image: radial-gradient(rgb(56 189 248 / 0.1) 1px, transparent 1px);
+  }
+
+  .auth-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .auth-orb {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
+  }
+
+  .auth-glass {
+    @apply rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl shadow-black/20 backdrop-blur-2xl;
+    @apply dark:border-white/10;
+  }
+
+  .auth-form-panel {
+    @apply relative flex w-full flex-col items-center justify-center overflow-hidden bg-slate-100 px-4 py-12 text-slate-900 lg:w-1/2;
+    color-scheme: light;
+  }
+
+  .auth-form-card {
+    @apply w-full max-w-md animate-scale-in rounded-3xl border border-slate-300 bg-white p-8 text-slate-900 shadow-xl shadow-slate-900/10;
+  }
+
+  .auth-section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.22em] text-sky-700;
+  }
+
+  .auth-subtitle {
+    @apply mt-2 text-sm text-slate-600;
+  }
+
+  .auth-label {
+    @apply block text-sm font-medium text-slate-700;
+  }
+
+  .auth-footer-text {
+    @apply text-center text-sm text-slate-600;
+  }
+
+  .auth-footer-link {
+    @apply font-medium text-sky-700 hover:text-sky-600;
+  }
+
+  .kanban-column {
+    @apply flex h-full min-h-0 w-[17rem] shrink-0 flex-col rounded-2xl border border-white/50 p-3 shadow-card backdrop-blur-sm;
+    @apply dark:border-slate-700/50;
+    @apply xl:w-auto xl:min-w-0 xl:flex-1 xl:basis-0;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      border-color 0.25s ease,
+      background-color 0.25s ease,
+      opacity 0.25s ease;
+  }
+
+  .kanban-board-dragging .kanban-column {
+    @apply transition-all duration-300;
+  }
+
+  .kanban-column-available {
+    @apply border-sky-300/50 bg-sky-50/40 dark:border-sky-600/30 dark:bg-sky-950/20;
+    box-shadow: 0 0 0 1px rgb(14 165 233 / 0.12);
+  }
+
+  .kanban-column-drop-target {
+    @apply scale-[1.015] border-sky-400/70 bg-gradient-to-b from-sky-50/90 to-indigo-50/50;
+    @apply dark:border-sky-500/60 dark:from-sky-950/50 dark:to-indigo-950/30;
+    animation: kanban-drop-pulse 1.4s ease-in-out infinite;
+  }
+
+  .kanban-column-drop-target .kanban-column-header {
+    @apply bg-sky-100/80 ring-1 ring-sky-300/50 dark:bg-sky-900/60 dark:ring-sky-500/40;
+  }
+
+  .kanban-column-invalid {
+    @apply scale-[0.99] border-transparent bg-slate-200/25 opacity-50 grayscale;
+    @apply dark:bg-slate-900/25;
+  }
+
+  .kanban-column-success {
+    animation: kanban-success-flash 0.7s ease-out;
+  }
+
+  .kanban-drop-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(14 165 233 / 0.08) 45%,
+      rgb(99 102 241 / 0.12) 55%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: kanban-drop-shimmer 1.8s linear infinite;
+  }
+
+  .kanban-drop-indicator {
+    animation: drop-indicator-bounce 1.2s ease-in-out infinite;
+  }
+
+  .ticket-card {
+    @apply rounded-xl border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm;
+    @apply hover:border-sky-300/80 hover:shadow-card-hover hover:-translate-y-0.5;
+    @apply dark:border-slate-700/80 dark:bg-slate-900/90 dark:hover:border-sky-600/60;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease,
+      opacity 0.2s ease;
+  }
+
+  .ticket-card-draggable:hover .ticket-drag-handle {
+    @apply opacity-100;
+  }
+
+  .ticket-card-dragging {
+    @apply scale-[0.97] border-dashed border-sky-400/70 bg-sky-50/30 opacity-40 shadow-none;
+    @apply dark:border-sky-500/50 dark:bg-sky-950/20;
+    transform: rotate(-1deg) scale(0.97);
+  }
+
+  .ticket-card-drag-ghost {
+    @apply rounded-xl border border-sky-400/80 bg-white/95 shadow-glow-lg backdrop-blur-md;
+    @apply dark:border-sky-500/70 dark:bg-slate-900/95;
+    transform: rotate(2deg) scale(1.04);
+  }
+
+  .ticket-card-placeholder {
+    @apply absolute inset-0 z-0 rounded-xl border-2 border-dashed border-sky-400/50 bg-sky-50/30;
+    @apply dark:border-sky-500/40 dark:bg-sky-950/20;
+    animation: ticket-placeholder-pulse 1.2s ease-in-out infinite;
+  }
+
+  .comment-bubble {
+    @apply rounded-2xl border border-slate-200/60 bg-gradient-to-br from-slate-50 to-white px-4 py-3 shadow-sm;
+    @apply dark:border-slate-700/60 dark:from-slate-800/80 dark:to-slate-900/80;
+  }
+
+  .modal-card {
+    @apply w-full max-w-sm animate-scale-in rounded-3xl border border-white/60 bg-white/95 p-8 shadow-2xl backdrop-blur-xl;
+    @apply dark:border-slate-700/60 dark:bg-slate-900/95;
+  }
+
+  .header-glass {
+    @apply border-b border-white/10 bg-slate-900/80 backdrop-blur-xl;
+    @apply dark:border-slate-800/80 dark:bg-slate-950/80;
+  }
+
+  .sidebar-rail {
+    @apply border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl;
+  }
+
+  .nav-pill-active {
+    @apply bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-lg shadow-sky-500/30;
+  }
+
+  .auth-headline-accent {
+    @apply bg-gradient-to-r from-sky-50 via-sky-200 to-sky-400 bg-clip-text text-transparent;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-sky-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent;
+    @apply dark:from-sky-400 dark:via-indigo-400 dark:to-violet-400;
+  }
+
+  .empty-state {
+    @apply flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300/60 bg-white/40 text-slate-500 backdrop-blur-sm;
+    @apply dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-400;
+  }
+}
+
+@layer utilities {
+  .app-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(14 165 233 / 0.55) transparent;
+  }
+
+  .app-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .app-scrollbar::-webkit-scrollbar-track {
+    margin: 4px;
+    background: rgb(148 163 184 / 0.12);
+    border-radius: 9999px;
+  }
+
+  .app-scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: linear-gradient(180deg, rgb(56 189 248), rgb(14 165 233));
+    border: 1px solid rgb(255 255 255 / 0.35);
+    background-clip: padding-box;
+  }
+
+  .app-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgb(125 211 252), rgb(56 189 248));
+  }
+
+  .app-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .dark .app-scrollbar {
+    scrollbar-color: rgb(56 189 248 / 0.7) rgb(30 41 59 / 0.55);
+  }
+
+  .dark .app-scrollbar::-webkit-scrollbar-track {
+    background: rgb(15 23 42 / 0.65);
+  }
+
+  .dark .app-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgb(56 189 248), rgb(2 132 199));
+    border-color: rgb(15 23 42 / 0.8);
+  }
+
+  .dark .app-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgb(125 211 252), rgb(56 189 248));
+  }
+
+  .app-select {
+    appearance: none;
+    padding-right: 2.75rem;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%230ea5e9'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 1.1rem;
+  }
+
+  .app-select:hover {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%230288d1'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z'/%3E%3C/svg%3E");
+  }
+
+  .dark .app-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2338bdf8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z'/%3E%3C/svg%3E");
+  }
+
+  .dark .app-select:hover {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237dd3fc'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z'/%3E%3C/svg%3E");
   }
 }

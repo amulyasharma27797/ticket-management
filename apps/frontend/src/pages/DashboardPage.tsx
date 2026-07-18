@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { fetchTickets, updateTicketStatus } from "../api/tickets";
+import type { TicketStats } from "../api/ticketTypes";
 import type { Ticket, TicketPriority, TicketStatus } from "../api/ticketTypes";
+import { fetchTicketStats, fetchTickets, updateTicketStatus } from "../api/tickets";
 import KanbanBoard from "../components/tickets/KanbanBoard";
 import TicketFilterBar from "../components/tickets/TicketFilterBar";
+import PageShell from "../components/layout/PageShell";
+import RightSidebar from "../components/layout/RightSidebar";
 import { useLayoutSearch } from "../hooks/useLayoutSearch";
 import { useAuth } from "../hooks/useAuth";
 import { parseApiError } from "../utils/authErrors";
@@ -14,11 +17,38 @@ import { canTransitionStatus } from "../utils/ticketTransitions";
 const PAGE_SIZE = 50;
 const SEARCH_DEBOUNCE_MS = 300;
 
+const EMPTY_STATS: TicketStats = {
+  total: 0,
+  byStatus: {
+    open: 0,
+    in_progress: 0,
+    resolved: 0,
+    closed: 0,
+    cancelled: 0,
+  },
+  byPriority: {
+    low: 0,
+    medium: 0,
+    high: 0,
+    critical: 0,
+  },
+};
+
+const STAT_CONFIG = [
+  { label: "Open", valueKey: "open" as const, accent: "bg-slate-500", icon: "○" },
+  { label: "In progress", valueKey: "in_progress" as const, accent: "bg-sky-500", icon: "◐" },
+  { label: "Pending", valueKey: "resolved" as const, accent: "bg-indigo-500", icon: "◑" },
+  { label: "Completed", valueKey: "closed" as const, accent: "bg-emerald-500", icon: "●" },
+  { label: "Cancelled", valueKey: "cancelled" as const, accent: "bg-rose-500", icon: "✕" },
+];
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { search } = useLayoutSearch();
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [stats, setStats] = useState<TicketStats>(EMPTY_STATS);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
@@ -40,6 +70,14 @@ export default function DashboardPage() {
     setPage(1);
   }, [debouncedSearch, statusFilter, priorityFilter]);
 
+  const loadStats = useCallback(() => {
+    setStatsLoading(true);
+    fetchTicketStats()
+      .then(setStats)
+      .catch(() => setStats(EMPTY_STATS))
+      .finally(() => setStatsLoading(false));
+  }, []);
+
   const loadTickets = useCallback(() => {
     setLoading(true);
     setError(null);
@@ -60,27 +98,12 @@ export default function DashboardPage() {
   }, [debouncedSearch, page, priorityFilter, statusFilter]);
 
   useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  useEffect(() => {
     loadTickets();
   }, [loadTickets]);
-
-  const stats = useMemo(
-    () => ({
-      open: tickets.filter((ticket) => ticket.status === "open").length,
-      inProgress: tickets.filter((ticket) => ticket.status === "in_progress").length,
-      pending: tickets.filter((ticket) => ticket.status === "resolved").length,
-      completed: tickets.filter((ticket) => ticket.status === "closed").length,
-      cancelled: tickets.filter((ticket) => ticket.status === "cancelled").length,
-    }),
-    [tickets],
-  );
-
-  const statItems = [
-    { label: "Open", value: stats.open },
-    { label: "In progress", value: stats.inProgress },
-    { label: "Pending", value: stats.pending },
-    { label: "Completed", value: stats.completed },
-    { label: "Cancelled", value: stats.cancelled },
-  ];
 
   function handleClearFilters() {
     setStatusFilter("");
@@ -104,6 +127,7 @@ export default function DashboardPage() {
     try {
       const updated = await updateTicketStatus(ticketId, status);
       setTickets((current) => current.map((ticket) => (ticket.id === ticketId ? updated : ticket)));
+      loadStats();
       if (statusFilter && updated.status !== statusFilter) {
         loadTickets();
       }
@@ -118,74 +142,107 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="page-gradient flex h-full min-h-0 flex-col">
-      <section className="shrink-0 border-b border-slate-200/80 bg-white/60 px-5 py-5 backdrop-blur-sm">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-600">Ticket board</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-900">Welcome back, {user?.name}</h1>
-        <p className="mt-3 text-sm text-slate-500">
-          Track support requests across open, in-progress, pending, completed, and cancelled queues.
-          {canDrag
-            ? " Drag a ticket card to another column to change its status."
-            : ""}
-        </p>
-
-        <div className="mt-4 flex w-full items-stretch gap-3">
-          <div className="flex min-w-0 flex-1 gap-3 overflow-x-auto">
-            {statItems.map((item) => (
-              <div
-                key={item.label}
-                className="min-w-[7rem] flex-1 rounded-xl bg-white px-4 py-3 shadow-sm"
-              >
-                <p className="text-xs uppercase text-slate-400">{item.label}</p>
-                <p className="text-xl font-semibold text-slate-900">{item.value}</p>
-              </div>
-            ))}
+    <PageShell fill>
+      <section className="glass-panel relative z-30 shrink-0 border-b px-5 py-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="section-label">Ticket board</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+              Welcome back,{" "}
+              <span className="gradient-text">{user?.name?.split(" ")[0]}</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Track support requests across open, in-progress, pending, completed, and cancelled queues.
+              {canDrag ? " Drag a ticket card to another column to change its status." : ""}
+            </p>
           </div>
-          <Link
-            to="/tickets/new"
-            className="inline-flex shrink-0 items-center self-stretch rounded-xl bg-sky-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-sky-500"
-          >
+          <Link to="/tickets/new" className="btn-primary shrink-0 self-start">
             + Create ticket
           </Link>
         </div>
 
-        <TicketFilterBar
-          status={statusFilter}
-          priority={priorityFilter}
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          onStatusChange={setStatusFilter}
-          onPriorityChange={setPriorityFilter}
-          onClear={handleClearFilters}
-          onPageChange={setPage}
-        />
+        <div className="app-scrollbar mt-5 flex gap-3 overflow-x-auto pb-1">
+          {STAT_CONFIG.map((item) => (
+            <div key={item.label} className="stat-card min-w-[8.5rem] flex-1">
+              <div className={`stat-card-accent ${item.accent}`} />
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                  {item.label}
+                </p>
+                <span className="text-sm text-slate-300 dark:text-slate-600" aria-hidden="true">
+                  {item.icon}
+                </span>
+              </div>
+              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
+                {statsLoading ? (
+                  <span className="inline-block h-7 w-8 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+                ) : (
+                  stats.byStatus[item.valueKey]
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
 
-        {statusError ? <p className="mt-4 text-sm text-red-500">{statusError}</p> : null}
       </section>
 
-      <section className="min-h-0 flex-1 overflow-hidden p-5">
-        {loading ? (
-          <div className="flex h-full items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm">
-            Loading tickets...
-          </div>
-        ) : error ? (
-          <div className="flex h-full items-center justify-center rounded-2xl bg-rose-50 text-rose-600 shadow-sm">
-            {error}
-          </div>
-        ) : tickets.length === 0 ? (
-          <div className="flex h-full items-center justify-center rounded-2xl bg-white/70 text-slate-500 shadow-sm">
-            No tickets match your search or filters.
-          </div>
-        ) : (
-          <KanbanBoard
-            tickets={tickets}
-            canDrag={canDrag}
-            onStatusChange={handleStatusChange}
-            updatingTicketId={updatingTicketId}
-          />
-        )}
-      </section>
-    </div>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <section className="glass-panel relative z-30 shrink-0 border-b px-4 py-3 sm:px-5">
+            <TicketFilterBar
+              status={statusFilter}
+              priority={priorityFilter}
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              onStatusChange={setStatusFilter}
+              onPriorityChange={setPriorityFilter}
+              onClear={handleClearFilters}
+              onPageChange={setPage}
+            />
+
+            {statusError ? (
+              <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
+                {statusError}
+              </p>
+            ) : null}
+          </section>
+
+          <section className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4 lg:p-5">
+            {loading ? (
+              <div className="empty-state h-full">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+                  <span>Loading tickets...</span>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="empty-state h-full border-red-200 bg-red-50 text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
+                {error}
+              </div>
+            ) : tickets.length === 0 ? (
+              <div className="empty-state h-full">
+                <div className="text-center">
+                  <p className="text-base font-medium text-slate-600 dark:text-slate-300">No tickets found</p>
+                  <p className="mt-1 text-sm">Try adjusting your search or filters, or create a new ticket.</p>
+                  <Link to="/tickets/new" className="btn-primary mt-4 inline-flex">
+                    + Create ticket
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <KanbanBoard
+                tickets={tickets}
+                canDrag={canDrag}
+                onStatusChange={handleStatusChange}
+                updatingTicketId={updatingTicketId}
+              />
+            )}
+          </section>
+        </div>
+
+        <RightSidebar />
+      </div>
+    </PageShell>
   );
 }

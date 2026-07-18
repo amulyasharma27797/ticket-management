@@ -15,6 +15,7 @@ from app.schemas.ticket import (
     TicketDescriptionUpdateRequest,
     TicketPriorityUpdateRequest,
     TicketResponse,
+    TicketStatsResponse,
     TicketStatusUpdateRequest,
     TicketTitleUpdateRequest,
 )
@@ -69,6 +70,10 @@ class TicketService:
             "totalPages": total_pages,
         }
         return [self._to_response(ticket) for ticket in tickets], meta
+
+    def get_ticket_stats(self, current_user: User) -> TicketStatsResponse:
+        total, by_status, by_priority = self.tickets.get_visible_stats(current_user)
+        return TicketStatsResponse(total=total, by_status=by_status, by_priority=by_priority)
 
     def update_title(
         self, current_user: User, ticket_id: UUID, payload: TicketTitleUpdateRequest

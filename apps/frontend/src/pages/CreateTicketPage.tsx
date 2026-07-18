@@ -1,17 +1,25 @@
 import { useNavigate } from "react-router-dom";
 
 import { createTicket } from "../api/tickets";
+import PageShell from "../components/layout/PageShell";
 import TicketForm from "../components/TicketForm";
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="page-gradient min-h-full overflow-auto p-5">
-      <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">Create ticket</h1>
-        <p className="mt-2 text-sm text-slate-500">Describe the issue you need help with.</p>
-        <div className="mt-6">
+    <PageShell scrollable className="p-5">
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-6 animate-fade-up">
+          <p className="section-label">New ticket</p>
+          <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+            Create a support request
+          </h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Describe the issue and we&apos;ll route it to the right team.
+          </p>
+        </div>
+        <div className="page-card animate-fade-up" style={{ animationDelay: "0.1s" }}>
           <TicketForm
             onSubmit={async (payload) => {
               await createTicket(payload);
@@ -20,6 +28,6 @@ export default function CreateTicketPage() {
           />
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }
