@@ -284,7 +284,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | **2** | **Complete** | `cursor/phase-2-auth` | JWT auth, login/register/logout/me, protected routes |
 | **3** | **Complete** | `cursor/phase-3-ticket-crud` | Ticket CRUD — create, detail, patch fields |
 | **4** | **Complete** | `cursor/phase-4-listing-search-filters` | Listing, search, filters |
-| 5 | In progress | `cursor/phase-5-comments` | Comments on tickets |
+| **5** | **Complete** | `cursor/phase-5-comments` | Comments on tickets |
+| 6 | In progress | `cursor/phase-6-state-machine` | State machine + integration tests |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -298,7 +299,9 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 
 **Phase 4 (complete):** Server-side ticket listing with `search`, `status`, and `priority` query filters plus pagination; dashboard filter bar and debounced header search wired to the API.
 
-**Phase 5 (in progress):** Add and list comments on ticket detail via nested `/tickets/{id}/comments` endpoints.
+**Phase 5 (complete):** Add and list comments on ticket detail via nested `/tickets/{id}/comments` endpoints.
+
+**Phase 6 (in progress):** Full parametrized state machine integration tests and terminal-state edit lock verification.
 
 ### Changing ticket status
 
@@ -325,8 +328,8 @@ Regular users can view status but cannot change it.
 | 2 | Authentication (JWT, login/register/logout) **(done)** |
 | 3 | Ticket CRUD **(done)** |
 | 4 | Listing, search, filters **(done)** |
-| 5 | Comments **(in progress)** |
-| 6 | State machine + integration tests |
+| 5 | Comments **(done)** |
+| 6 | State machine + integration tests **(in progress)** |
 | 7 | Dashboard, responsive UI, dark mode |
 | 8 | CSV export |
 | 9 | Error handling and API polish |
