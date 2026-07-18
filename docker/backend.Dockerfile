@@ -9,6 +9,8 @@ RUN apt-get update \
 COPY apps/backend/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+COPY alembic.ini /app/alembic.ini
+COPY migrations/ /app/migrations/
 COPY apps/backend/ /app/apps/backend/
 
 WORKDIR /app/apps/backend
