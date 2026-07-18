@@ -266,7 +266,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 |-------|--------|--------|-------|
 | **0** | **Complete** | `cursor/phase-0-scaffold` | Docker Compose, health endpoints, React scaffold — verified locally |
 | **1** | **Complete** | `cursor/phase-1-database` | ORM models, Alembic migrations, Clean Architecture skeleton |
-| 2 | Pending | — | Authentication (JWT, login/register/logout) |
+| **2** | **Complete** | `cursor/phase-2-auth` | JWT auth, login/register/logout/me, protected routes |
+| 3 | Pending | — | Ticket CRUD |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -274,11 +275,13 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 
 **Phase 1 (complete):** SQLAlchemy models (`users`, `tickets`, `comments`, `sessions`) with PostgreSQL enums; Alembic auto-migrates on backend startup; integration tests verify tables and enums exist.
 
+**Phase 2 (complete):** JWT access + refresh tokens; register/login/logout/me/refresh endpoints; seed users; frontend login/register pages with protected dashboard route.
+
 | Phase | Focus |
 |-------|-------|
 | 0 | Docker Compose, FastAPI + React skeletons, health checks **(done)** |
 | 1 | Database models, Alembic migrations **(done)** |
-| 2 | Authentication (JWT, login/register/logout) |
+| 2 | Authentication (JWT, login/register/logout) **(done)** |
 | 3 | Ticket CRUD |
 | 4 | Listing, search, filters |
 | 5 | Comments |

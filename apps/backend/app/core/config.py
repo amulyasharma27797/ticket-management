@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
+    seed_users: bool = False
+    seed_user_password: str = "change_me"
 
     @property
     def cors_origin_list(self) -> list[str]:

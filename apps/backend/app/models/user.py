@@ -2,7 +2,7 @@ from sqlalchemy import Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.enums import UserRole
+from app.models.enums import UserRole, enum_values
 
 
 class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -12,7 +12,13 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_role", native_enum=True, create_constraint=True),
+        Enum(
+            UserRole,
+            name="user_role",
+            native_enum=True,
+            create_constraint=True,
+            values_callable=enum_values,
+        ),
         nullable=False,
         default=UserRole.USER,
     )
