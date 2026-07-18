@@ -36,3 +36,7 @@ class UserRepository(BaseRepository[User]):
         )
         stmt = select(User).order_by(role_order, User.name.asc())
         return list(self.db.scalars(stmt))
+
+    def list_all(self) -> list[User]:
+        stmt = select(User).order_by(User.name.asc())
+        return list(self.db.scalars(stmt))

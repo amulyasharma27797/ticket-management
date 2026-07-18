@@ -3,7 +3,6 @@ import uuid
 from fastapi.testclient import TestClient
 
 from app.core.middleware import REQUEST_ID_HEADER
-from app.routers import health
 
 DEFAULT_PASSWORD = "Password1"
 
@@ -70,13 +69,14 @@ def test_unauthenticated_envelope(client: TestClient) -> None:
     _assert_error_envelope(body, code="UNAUTHORIZED", status_code=401)
 
 
-def test_unhandled_error_envelope(client: TestClient, monkeypatch) -> None:
+def test_unhandled_error_envelope(client: TestClient) -> None:
+    from app.main import app
+
     def boom() -> dict:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(health, "health", boom)
-
-    response = client.get("/api/v1/health")
+    app.add_api_route("/api/v1/_test-boom", boom, methods=["GET"])
+    response = client.get("/api/v1/_test-boom")
 
     body = response.json()
     assert response.status_code == 500

@@ -22,6 +22,7 @@ services:
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
+      target: development
     container_name: ticket-backend
     env_file:
       - .env
@@ -54,6 +55,7 @@ services:
     build:
       context: .
       dockerfile: docker/frontend.Dockerfile
+      target: development
     container_name: ticket-frontend
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}

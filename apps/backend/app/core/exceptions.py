@@ -62,3 +62,8 @@ class TicketNotEditableError(AppException):
 class InvalidStatusTransitionError(AppException):
     def __init__(self, message: str = "Invalid ticket status transition") -> None:
         super().__init__(status_code=400, code="INVALID_STATUS_TRANSITION", message=message)
+
+
+class NotImplementedApiError(AppException):
+    def __init__(self, message: str = "This endpoint is not implemented yet") -> None:
+        super().__init__(status_code=501, code="NOT_IMPLEMENTED", message=message)
