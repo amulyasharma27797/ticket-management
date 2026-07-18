@@ -1,7 +1,8 @@
 import { FormEvent, useState } from "react";
 
 import type { Comment } from "../../api/commentTypes";
-import { inputClassName, parseApiError } from "../../utils/authErrors";
+import ErrorAlert from "../ui/ErrorAlert";
+import { getErrorMessage, inputClassName, parseApiError } from "../../utils/authErrors";
 
 type CommentListProps = {
   comments: Comment[];
@@ -51,7 +52,7 @@ export default function CommentList({
     } catch (err) {
       const parsed = parseApiError(err);
       setFieldError(parsed.fieldErrors.message ?? null);
-      setSubmitError(parsed.message ?? "Failed to add comment.");
+      setSubmitError(getErrorMessage(err, "Failed to add comment."));
     }
   }
 
@@ -70,7 +71,7 @@ export default function CommentList({
           Loading comments...
         </div>
       ) : error ? (
-        <p className="mt-4 text-sm text-red-500">{error}</p>
+        <ErrorAlert className="mt-4" message={error} />
       ) : comments.length === 0 ? (
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
           No comments yet. Be the first to reply.
@@ -126,7 +127,7 @@ export default function CommentList({
             {fieldError}
           </p>
         ) : null}
-        {submitError ? <p className="text-sm text-red-500">{submitError}</p> : null}
+        {submitError ? <ErrorAlert message={submitError} /> : null}
         <button type="submit" disabled={submitting} className="btn-primary">
           {submitting ? "Posting..." : "Post comment"}
         </button>

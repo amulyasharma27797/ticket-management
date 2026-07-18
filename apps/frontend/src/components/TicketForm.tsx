@@ -2,7 +2,8 @@ import { FormEvent, useState } from "react";
 
 import type { TicketCreateInput, TicketPriority } from "../api/ticketTypes";
 import Select from "./ui/Select";
-import { inputClassName, parseApiError } from "../utils/authErrors";
+import ErrorAlert, { FieldErrorsNotice } from "./ui/ErrorAlert";
+import { getErrorMessage, inputClassName, parseApiError } from "../utils/authErrors";
 
 type TicketFormProps = {
   onSubmit: (payload: TicketCreateInput) => Promise<void>;
@@ -38,7 +39,7 @@ export default function TicketForm({ onSubmit, submitLabel = "Create ticket" }: 
     } catch (err) {
       const parsed = parseApiError(err);
       setFieldErrors(parsed.fieldErrors);
-      setError(parsed.message);
+      setError(getErrorMessage(err, parsed.message ?? "Failed to create ticket."));
     } finally {
       setSubmitting(false);
     }
@@ -46,16 +47,8 @@ export default function TicketForm({ onSubmit, submitLabel = "Create ticket" }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
-          {error}
-        </p>
-      ) : null}
-      {Object.keys(fieldErrors).length > 0 ? (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400">
-          Please fix the highlighted fields below.
-        </p>
-      ) : null}
+      {error ? <ErrorAlert message={error} /> : null}
+      {Object.keys(fieldErrors).length > 0 ? <FieldErrorsNotice /> : null}
 
       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
         Title

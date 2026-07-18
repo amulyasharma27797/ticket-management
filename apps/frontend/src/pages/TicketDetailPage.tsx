@@ -18,12 +18,14 @@ import {
 } from "../api/tickets";
 import Modal from "../components/ui/Modal";
 import Select from "../components/ui/Select";
+import ErrorAlert, { FieldErrorsNotice } from "../components/ui/ErrorAlert";
 import PageShell from "../components/layout/PageShell";
 import CommentList from "../components/tickets/CommentList";
 import PriorityBadge from "../components/tickets/PriorityBadge";
 import StatusBadge from "../components/tickets/StatusBadge";
 import { useAuth } from "../hooks/useAuth";
-import { inputClassName, parseApiError } from "../utils/authErrors";
+import { useToast } from "../hooks/useToast";
+import { getErrorMessage, inputClassName, parseApiError } from "../utils/authErrors";
 import { canChangeTicketStatusOnDetail } from "../utils/ticketPermissions";
 import { getStatusSelectOptions } from "../utils/ticketTransitions";
 
@@ -37,6 +39,7 @@ function detailInputClassName(hasError: boolean): string {
 export default function TicketDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { ticketId } = useParams<{ ticketId: string }>();
   const canChangeStatus = canChangeTicketStatusOnDetail(user);
   const [ticket, setTicket] = useState<Ticket | null>(null);
@@ -65,7 +68,7 @@ export default function TicketDetailPage() {
         setPriority(data.priority);
         setStatus(data.status);
       })
-      .catch((err) => setError(parseApiError(err).message ?? "Failed to load ticket"))
+      .catch((err) => setError(getErrorMessage(err, "Failed to load ticket")))
       .finally(() => setLoading(false));
   }, [ticketId]);
 
@@ -74,7 +77,7 @@ export default function TicketDetailPage() {
     setCommentsLoading(true);
     fetchComments(ticketId)
       .then(setComments)
-      .catch(() => setCommentsError("Failed to load comments"))
+      .catch((err) => setCommentsError(getErrorMessage(err, "Failed to load comments")))
       .finally(() => setCommentsLoading(false));
   }, [ticketId]);
 
@@ -135,10 +138,12 @@ export default function TicketDetailPage() {
       }
       setTicket(updated);
       setShowSuccessModal(true);
+      showToast("Ticket updated successfully.");
     } catch (err) {
       const parsed = parseApiError(err);
       setFieldErrors(parsed.fieldErrors);
-      setError(parsed.message ?? "Failed to update ticket. Please review the form and try again.");
+      setError(getErrorMessage(err, "Failed to update ticket. Please review the form and try again."));
+      showToast(getErrorMessage(err, "Failed to update ticket."), "error");
     } finally {
       setSaving(false);
     }
@@ -152,6 +157,11 @@ export default function TicketDetailPage() {
       const created = await createComment(ticketId, { message });
       setComments((current) => [...current, created]);
       setTicket({ ...ticket, commentCount: ticket.commentCount + 1 });
+      showToast("Comment posted.");
+    } catch (err) {
+      const messageText = getErrorMessage(err, "Failed to add comment.");
+      showToast(messageText, "error");
+      throw err;
     } finally {
       setCommentSubmitting(false);
     }
@@ -170,7 +180,7 @@ export default function TicketDetailPage() {
     return (
       <PageShell className="flex min-h-full flex-col items-center justify-center p-8">
         <div className="page-card max-w-md text-center">
-          <p className="text-red-500">{error}</p>
+          <ErrorAlert message={error} />
           <Link to="/" className="btn-primary mt-4 inline-flex">
             Back to dashboard
           </Link>
@@ -215,15 +225,11 @@ export default function TicketDetailPage() {
               </div>
             </div>
 
-            {error ? (
-              <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
-                {error}
-              </p>
-            ) : null}
+            {error ? <ErrorAlert className="mt-4" message={error} /> : null}
             {Object.keys(fieldErrors).length > 0 ? (
-              <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400">
+              <FieldErrorsNotice>
                 Please fix the highlighted fields below before saving again.
-              </p>
+              </FieldErrorsNotice>
             ) : null}
 
             <form onSubmit={handleSave} className="mt-6 space-y-5">

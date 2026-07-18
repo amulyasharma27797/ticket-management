@@ -2,7 +2,8 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import AuthLayout from "../components/ui/AuthLayout";
-import { authInputClassName, parseApiError } from "../utils/authErrors";
+import ErrorAlert, { FieldErrorsNotice } from "../components/ui/ErrorAlert";
+import { authInputClassName, getErrorMessage, parseApiError } from "../utils/authErrors";
 import { useAuth } from "../hooks/useAuth";
 
 export default function LoginPage() {
@@ -36,7 +37,7 @@ export default function LoginPage() {
     } catch (err) {
       const parsed = parseApiError(err);
       setFieldErrors(parsed.fieldErrors);
-      setError(parsed.message);
+      setError(getErrorMessage(err, parsed.message ?? "Failed to sign in."));
     } finally {
       setSubmitting(false);
     }
@@ -45,16 +46,8 @@ export default function LoginPage() {
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to access your support tickets">
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error ? (
-          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </p>
-        ) : null}
-        {Object.keys(fieldErrors).length > 0 ? (
-          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Please fix the highlighted fields below.
-          </p>
-        ) : null}
+        {error ? <ErrorAlert message={error} /> : null}
+        {Object.keys(fieldErrors).length > 0 ? <FieldErrorsNotice /> : null}
 
         <label className="auth-label">
           Email
