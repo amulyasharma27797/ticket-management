@@ -1,5 +1,6 @@
 import type { TicketPriority, TicketStatus } from "../../api/ticketTypes";
 import { PRIORITY_OPTIONS, STATUS_OPTIONS, TICKET_PRIORITY_LABELS, TICKET_STATUS_LABELS } from "../../api/ticketTypes";
+import Select from "../ui/Select";
 
 type TicketFilterBarProps = {
   status: TicketStatus | "";
@@ -26,52 +27,56 @@ export default function TicketFilterBar({
 }: TicketFilterBarProps) {
   const hasFilters = Boolean(status || priority);
 
+  const statusOptions = [
+    { value: "" as const, label: "All statuses" },
+    ...STATUS_OPTIONS.map((option) => ({
+      value: option,
+      label: TICKET_STATUS_LABELS[option],
+    })),
+  ];
+
+  const priorityOptions = [
+    { value: "" as const, label: "All priorities" },
+    ...PRIORITY_OPTIONS.map((option) => ({
+      value: option,
+      label: TICKET_PRIORITY_LABELS[option],
+    })),
+  ];
+
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-3">
-      <label className="flex items-center gap-2 text-sm text-slate-600">
-        <span className="font-medium">Status</span>
-        <select
-          value={status}
-          onChange={(event) => onStatusChange(event.target.value as TicketStatus | "")}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none ring-sky-300 focus:ring-2"
-        >
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {TICKET_STATUS_LABELS[option]}
-            </option>
-          ))}
-        </select>
-      </label>
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex w-full min-w-[12rem] flex-1 items-center gap-2 text-sm text-slate-600 dark:text-slate-300 sm:w-auto sm:flex-none">
+          <span className="shrink-0 font-medium">Status</span>
+          <Select
+            value={status}
+            onChange={onStatusChange}
+            options={statusOptions}
+            placeholder="All statuses"
+            className="min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none"
+          />
+        </label>
 
-      <label className="flex items-center gap-2 text-sm text-slate-600">
-        <span className="font-medium">Priority</span>
-        <select
-          value={priority}
-          onChange={(event) => onPriorityChange(event.target.value as TicketPriority | "")}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none ring-sky-300 focus:ring-2"
-        >
-          <option value="">All priorities</option>
-          {PRIORITY_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {TICKET_PRIORITY_LABELS[option]}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="flex w-full min-w-[12rem] flex-1 items-center gap-2 text-sm text-slate-600 dark:text-slate-300 sm:w-auto sm:flex-none">
+          <span className="shrink-0 font-medium">Priority</span>
+          <Select
+            value={priority}
+            onChange={onPriorityChange}
+            options={priorityOptions}
+            placeholder="All priorities"
+            className="min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none"
+          />
+        </label>
 
-      {hasFilters ? (
-        <button
-          type="button"
-          onClick={onClear}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-        >
-          Clear filters
-        </button>
-      ) : null}
+        {hasFilters ? (
+          <button type="button" onClick={onClear} className="btn-ghost py-2">
+            Clear filters
+          </button>
+        ) : null}
+      </div>
 
-      <div className="ml-auto flex items-center gap-2 text-sm text-slate-600">
-        <span>
+      <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 sm:ml-auto dark:text-slate-300">
+        <span className="font-medium">
           {total} ticket{total === 1 ? "" : "s"}
           {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}
         </span>
@@ -81,7 +86,7 @@ export default function TicketFilterBar({
               type="button"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-ghost px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
@@ -89,7 +94,7 @@ export default function TicketFilterBar({
               type="button"
               disabled={page >= totalPages}
               onClick={() => onPageChange(page + 1)}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-ghost px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </button>

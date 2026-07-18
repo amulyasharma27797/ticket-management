@@ -54,6 +54,14 @@ class TicketAssignRequest(BaseModel):
     assigned_to_id: UUID | None = Field(default=None, alias="assignedToId")
 
 
+class TicketStatsResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    total: int
+    by_status: dict[str, int] = Field(serialization_alias="byStatus")
+    by_priority: dict[str, int] = Field(serialization_alias="byPriority")
+
+
 class TicketResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 

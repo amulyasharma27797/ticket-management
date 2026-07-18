@@ -77,10 +77,40 @@ export function getAuthErrorMessage(error: unknown): string {
     .join(". ");
 }
 
-export function inputClassName(hasError: boolean): string {
-  return `mt-1 w-full rounded-lg border bg-white px-3 py-2 text-slate-900 ${
-    hasError ? "border-red-500 focus:border-red-500" : "border-slate-300"
+export function authInputClassName(hasError: boolean): string {
+  return `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/50 ${
+    hasError
+      ? "border-red-500 focus:border-red-500 focus:ring-red-400/40"
+      : "border-slate-300 hover:border-sky-400 focus:border-sky-500"
   }`;
+}
+
+export function inputClassName(hasError: boolean): string {
+  return `mt-1 w-full rounded-xl border bg-white px-3 py-2.5 text-slate-900 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-sky-400/50 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:focus:ring-sky-500/30 ${
+    hasError
+      ? "border-red-500 focus:border-red-500 focus:ring-red-400/40"
+      : "border-slate-200 hover:border-sky-300 dark:hover:border-slate-500"
+  }`;
+}
+
+export function selectTriggerClassName(hasError = false, extra = ""): string {
+  return [
+    "relative rounded-xl border bg-white px-3 py-2.5 pr-10 text-sm text-slate-900 shadow-sm transition",
+    "focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:border-sky-400",
+    "disabled:cursor-not-allowed disabled:opacity-60",
+    "dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700 dark:focus:border-sky-500 dark:focus:ring-sky-500/30",
+    hasError
+      ? "border-red-500 focus:border-red-500 focus:ring-red-400/40"
+      : "border-slate-200 hover:border-sky-300 dark:hover:border-slate-500",
+    extra,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** @deprecated Use Select component or selectTriggerClassName */
+export function selectClassName(hasError = false, extra = ""): string {
+  return ["app-select", selectTriggerClassName(hasError, extra)].filter(Boolean).join(" ");
 }
 
 export { ApiError };
