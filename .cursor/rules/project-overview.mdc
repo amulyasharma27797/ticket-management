@@ -59,9 +59,10 @@ Work incrementally: Phase 0 (scaffold) → Phase 10 (production). Each phase mus
 
 When a phase is done:
 
-1. **Test locally** — lint, backend pytest, frontend Vitest, smoke (`./harness smoke` or manual)
-2. **Verify DoD** — blueprint Definition of Done for that phase is met
-3. **Commit** — one phase per branch (`cursor/phase-N-summary`); use conventional commits
-4. **Push** — only after all tests pass locally
+1. **Sync with main** — `git fetch origin && git merge origin/main` on your feature branch (see `git-sync-with-main` rule)
+2. **Test locally** — lint, backend pytest, frontend Vitest, smoke (`./harness smoke` or manual)
+3. **Verify DoD** — blueprint Definition of Done for that phase is met
+4. **Commit** — one phase per branch (`cursor/phase-N-summary`); use conventional commits
+5. **Push** — only after sync + all tests pass locally
 
 See `phase-completion` skill for the full checklist.

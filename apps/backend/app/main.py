@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.errors import error_response, exception_to_response
 from app.core.exceptions import AppException
-from app.routers import auth, health, protected
+from app.routers import auth, health, protected, tickets
 
 app = FastAPI(
     title="Support Ticket Management API",
@@ -77,3 +77,4 @@ async def validation_exception_handler(
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(protected.router, prefix="/api/v1")
+app.include_router(tickets.router, prefix="/api/v1")

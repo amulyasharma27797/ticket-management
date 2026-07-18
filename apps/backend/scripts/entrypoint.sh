@@ -36,4 +36,13 @@ cd /app/apps/backend
 python -m app.scripts.seed_users
 
 cd /app/apps/backend
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+RELOAD_ARGS=()
+if [ "${UVICORN_RELOAD:-false}" = "true" ]; then
+  echo "Starting backend with hot reload..."
+  RELOAD_ARGS=(--reload --reload-dir /app/apps/backend)
+else
+  echo "Starting backend..."
+fi
+
+exec uvicorn app.main:app --host 0.0.0.0 --port 8000 "${RELOAD_ARGS[@]}"

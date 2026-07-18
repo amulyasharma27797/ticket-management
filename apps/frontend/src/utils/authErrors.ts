@@ -78,8 +78,8 @@ export function getAuthErrorMessage(error: unknown): string {
 }
 
 export function inputClassName(hasError: boolean): string {
-  return `mt-1 w-full rounded-lg border bg-slate-950 px-3 py-2 ${
-    hasError ? "border-red-500 focus:border-red-500" : "border-slate-700"
+  return `mt-1 w-full rounded-lg border bg-white px-3 py-2 text-slate-900 ${
+    hasError ? "border-red-500 focus:border-red-500" : "border-slate-300"
   }`;
 }
 
