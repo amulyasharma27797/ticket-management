@@ -31,5 +31,9 @@ echo "Applying database migrations..."
 cd /app
 alembic -c alembic.ini upgrade head
 
+echo "Seeding users..."
+cd /app/apps/backend
+python -m app.scripts.seed_users
+
 cd /app/apps/backend
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000
