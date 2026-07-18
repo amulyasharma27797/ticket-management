@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import type { TicketStats } from "../api/ticketTypes";
 import type { Ticket, TicketPriority, TicketStatus } from "../api/ticketTypes";
-import { fetchTicketStats, fetchTickets, updateTicketStatus } from "../api/tickets";
+import { downloadMyTicketsCsv, fetchTicketStats, fetchTickets, updateTicketStatus } from "../api/tickets";
 import KanbanBoard from "../components/tickets/KanbanBoard";
 import TicketFilterBar from "../components/tickets/TicketFilterBar";
 import PageShell from "../components/layout/PageShell";
@@ -58,6 +58,8 @@ export default function DashboardPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
   const [debouncedSearch, setDebouncedSearch] = useState(search);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const canDrag = canDragTicketOnBoard(user);
 
@@ -108,6 +110,18 @@ export default function DashboardPage() {
   function handleClearFilters() {
     setStatusFilter("");
     setPriorityFilter("");
+  }
+
+  async function handleExportCsv() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await downloadMyTicketsCsv();
+    } catch (err) {
+      setExportError(parseApiError(err).message ?? "Failed to export tickets.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function handleStatusChange(ticketId: string, status: TicketStatus) {
@@ -199,7 +213,15 @@ export default function DashboardPage() {
               onPriorityChange={setPriorityFilter}
               onClear={handleClearFilters}
               onPageChange={setPage}
+              onExport={handleExportCsv}
+              exporting={exporting}
             />
+
+            {exportError ? (
+              <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
+                {exportError}
+              </p>
+            ) : null}
 
             {statusError ? (
               <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">

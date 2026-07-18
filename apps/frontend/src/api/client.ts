@@ -139,3 +139,41 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, retry = 
 
   return parseResponse<T>(response);
 }
+
+export async function apiDownloadBlob(
+  path: string,
+  init: RequestInit = {},
+  retry = true,
+): Promise<{ blob: Blob; filename: string | null }> {
+  const headers = new Headers(init.headers);
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+
+  const response = await fetch(`${API_URL}${path}`, { ...init, headers });
+
+  if (response.status === 401 && retry && getRefreshToken()) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      return apiDownloadBlob(path, init, false);
+    }
+  }
+
+  if (!response.ok) {
+    try {
+      await parseResponse<never>(response);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(`HTTP ${response.status}`, "UNKNOWN_ERROR");
+    }
+    throw new ApiError(`HTTP ${response.status}`, "UNKNOWN_ERROR");
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: response.headers.get("Content-Disposition"),
+  };
+}

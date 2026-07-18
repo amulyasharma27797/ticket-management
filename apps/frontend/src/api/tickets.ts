@@ -1,4 +1,5 @@
-import { apiFetch, apiFetchEnvelope } from "./client";
+import { apiDownloadBlob, apiFetch, apiFetchEnvelope } from "./client";
+import { parseContentDispositionFilename, triggerBrowserDownload } from "../utils/download";
 import type {
   Ticket,
   TicketCreateInput,
@@ -77,4 +78,9 @@ export async function assignTicket(
     method: "PATCH",
     body: JSON.stringify({ assignedToId }),
   });
+}
+
+export async function downloadMyTicketsCsv(): Promise<void> {
+  const { blob, filename } = await apiDownloadBlob("/tickets/export");
+  triggerBrowserDownload(blob, parseContentDispositionFilename(filename) ?? "my-tickets.csv");
 }
