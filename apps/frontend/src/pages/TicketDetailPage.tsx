@@ -7,6 +7,8 @@ import {
   type TicketPriority,
   type TicketStatus,
 } from "../api/ticketTypes";
+import type { Comment } from "../api/commentTypes";
+import { createComment, fetchComments } from "../api/comments";
 import {
   fetchTicket,
   updateTicketDescription,
@@ -15,6 +17,7 @@ import {
   updateTicketTitle,
 } from "../api/tickets";
 import Modal from "../components/ui/Modal";
+import CommentList from "../components/tickets/CommentList";
 import PriorityBadge from "../components/tickets/PriorityBadge";
 import StatusBadge from "../components/tickets/StatusBadge";
 import { useAuth } from "../hooks/useAuth";
@@ -44,6 +47,10 @@ export default function TicketDetailPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
 
   useEffect(() => {
     if (!ticketId) return;
@@ -58,6 +65,15 @@ export default function TicketDetailPage() {
       })
       .catch((err) => setError(parseApiError(err).message ?? "Failed to load ticket"))
       .finally(() => setLoading(false));
+  }, [ticketId]);
+
+  useEffect(() => {
+    if (!ticketId) return;
+    setCommentsLoading(true);
+    fetchComments(ticketId)
+      .then(setComments)
+      .catch(() => setCommentsError("Failed to load comments"))
+      .finally(() => setCommentsLoading(false));
   }, [ticketId]);
 
   useEffect(() => {
@@ -126,6 +142,19 @@ export default function TicketDetailPage() {
     }
   }
 
+  async function handleAddComment(message: string) {
+    if (!ticketId || !ticket) return;
+
+    setCommentSubmitting(true);
+    try {
+      const created = await createComment(ticketId, { message });
+      setComments((current) => [...current, created]);
+      setTicket({ ...ticket, commentCount: ticket.commentCount + 1 });
+    } finally {
+      setCommentSubmitting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="page-gradient flex min-h-full items-center justify-center p-8 text-slate-500">
@@ -168,7 +197,7 @@ export default function TicketDetailPage() {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <PriorityBadge priority={ticket.priority} />
                 {!canChangeStatus ? <StatusBadge status={ticket.status} /> : null}
-                <span className="text-xs text-slate-400">{ticket.commentCount} comments</span>
+                <span className="text-xs text-slate-400">{comments.length} comments</span>
               </div>
             </div>
           </div>
@@ -290,6 +319,14 @@ export default function TicketDetailPage() {
               {saving ? "Saving..." : "Save changes"}
             </button>
           </form>
+
+          <CommentList
+            comments={comments}
+            loading={commentsLoading}
+            error={commentsError}
+            submitting={commentSubmitting}
+            onSubmit={handleAddComment}
+          />
         </div>
       </div>
     </>
