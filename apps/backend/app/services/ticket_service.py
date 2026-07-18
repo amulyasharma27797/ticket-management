@@ -20,6 +20,7 @@ from app.schemas.ticket import (
     TicketTitleUpdateRequest,
 )
 from app.services.ticket_state_machine import validate_status_transition
+from app.utils.csv_export import format_tickets_csv
 
 TERMINAL_STATUSES = {TicketStatus.CLOSED, TicketStatus.CANCELLED}
 
@@ -74,6 +75,11 @@ class TicketService:
     def get_ticket_stats(self, current_user: User) -> TicketStatsResponse:
         total, by_status, by_priority = self.tickets.get_visible_stats(current_user)
         return TicketStatsResponse(total=total, by_status=by_status, by_priority=by_priority)
+
+    def export_created_tickets_csv(self, current_user: User) -> str:
+        tickets = self.tickets.list_created_by_user(current_user.id)
+        responses = [self._to_response(ticket) for ticket in tickets]
+        return format_tickets_csv(responses)
 
     def update_title(
         self, current_user: User, ticket_id: UUID, payload: TicketTitleUpdateRequest

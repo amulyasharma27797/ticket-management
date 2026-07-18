@@ -12,6 +12,8 @@ type TicketFilterBarProps = {
   onPriorityChange: (value: TicketPriority | "") => void;
   onClear: () => void;
   onPageChange: (page: number) => void;
+  onExport?: () => void;
+  exporting?: boolean;
 };
 
 export default function TicketFilterBar({
@@ -24,6 +26,8 @@ export default function TicketFilterBar({
   onPriorityChange,
   onClear,
   onPageChange,
+  onExport,
+  exporting = false,
 }: TicketFilterBarProps) {
   const hasFilters = Boolean(status || priority);
 
@@ -76,6 +80,16 @@ export default function TicketFilterBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600 sm:ml-auto dark:text-slate-300">
+        {onExport ? (
+          <button
+            type="button"
+            onClick={onExport}
+            disabled={exporting}
+            className="btn-ghost px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {exporting ? "Exporting..." : "Export my tickets"}
+          </button>
+        ) : null}
         <span className="font-medium">
           {total} ticket{total === 1 ? "" : "s"}
           {totalPages > 1 ? ` · Page ${page} of ${totalPages}` : ""}

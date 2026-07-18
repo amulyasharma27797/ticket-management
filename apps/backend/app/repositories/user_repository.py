@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import case, select
 from sqlalchemy.orm import Session
 
 from app.models.enums import UserRole
@@ -27,3 +27,12 @@ class UserRepository(BaseRepository[User]):
 
     def get_by_id(self, user_id: UUID) -> User | None:
         return self.get(user_id)
+
+    def list_team_members(self) -> list[User]:
+        role_order = case(
+            (User.role == UserRole.ADMIN, 0),
+            (User.role == UserRole.AGENT, 1),
+            else_=2,
+        )
+        stmt = select(User).order_by(role_order, User.name.asc())
+        return list(self.db.scalars(stmt))

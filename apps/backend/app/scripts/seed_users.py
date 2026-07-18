@@ -2,15 +2,9 @@
 
 from app.core.config import settings
 from app.core.security import hash_password
+from app.core.seed_accounts import SEED_ACCOUNTS
 from app.database.session import SessionLocal
-from app.models.enums import UserRole
 from app.repositories.user_repository import UserRepository
-
-SEED_ACCOUNTS = [
-    ("Admin User", "admin@example.com", UserRole.ADMIN),
-    ("Agent User", "agent@example.com", UserRole.AGENT),
-    ("Regular User", "user@example.com", UserRole.USER),
-]
 
 
 def seed_users() -> None:

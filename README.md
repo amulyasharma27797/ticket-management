@@ -286,7 +286,8 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | **4** | **Complete** | `cursor/phase-4-listing-search-filters` | Listing, search, filters |
 | **5** | **Complete** | `cursor/phase-5-comments` | Comments on tickets |
 | **6** | **Complete** | `cursor/phase-6-state-machine` | State machine + integration tests |
-| 7 | In progress | `cursor/phase-7-dashboard-dark-mode` | Dashboard, responsive UI, dark mode |
+| **7** | **Complete** | `cursor/phase-7-dashboard-dark-mode` | Dashboard, responsive UI, dark mode |
+| 8 | In progress | `cursor/phase-8-csv-export` | CSV export of self-created tickets |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
@@ -304,7 +305,9 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 
 **Phase 6 (complete):** Full parametrized state machine integration tests and terminal-state edit lock verification.
 
-**Phase 7 (in progress):** `GET /tickets/stats` for dashboard metrics, dark mode toggle with persisted theme, and mobile navigation drawer.
+**Phase 7 (complete):** `GET /tickets/stats` for dashboard metrics, dark mode toggle with persisted theme, and mobile navigation drawer.
+
+**Phase 8 (in progress):** `GET /tickets/export` returns a CSV of tickets created by the current user; dashboard **Export my tickets** button downloads the file.
 
 ### Changing ticket status
 
@@ -333,8 +336,8 @@ Regular users can view status but cannot change it.
 | 4 | Listing, search, filters **(done)** |
 | 5 | Comments **(done)** |
 | 6 | State machine + integration tests **(done)** |
-| 7 | Dashboard, responsive UI, dark mode **(in progress)** |
-| 8 | CSV export |
+| 7 | Dashboard, responsive UI, dark mode **(done)** |
+| 8 | CSV export **(in progress)** |
 | 9 | Error handling and API polish |
 | 10 | CI, full test suite, production readiness |
 

@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_db
@@ -65,6 +66,19 @@ def get_ticket_stats(
 ) -> dict:
     stats = ticket_service.get_ticket_stats(current_user)
     return success_response(stats.model_dump(by_alias=True))
+
+
+@router.get("/export")
+def export_created_tickets_csv(
+    current_user: User = Depends(get_current_user),
+    ticket_service: TicketService = Depends(get_ticket_service),
+) -> Response:
+    csv_content = ticket_service.export_created_tickets_csv(current_user)
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="my-tickets.csv"'},
+    )
 
 
 @router.get("/{ticket_id}")

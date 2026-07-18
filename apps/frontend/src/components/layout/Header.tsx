@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
+import { userInitials } from "../../utils/userInitials";
 import ThemeToggle from "./ThemeToggle";
 
 type HeaderProps = {
@@ -8,16 +9,6 @@ type HeaderProps = {
   onSearchChange: (value: string) => void;
   onMenuClick: () => void;
 };
-
-function userInitials(name?: string): string {
-  if (!name) return "U";
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
-}
 
 export default function Header({ search, onSearchChange, onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth();

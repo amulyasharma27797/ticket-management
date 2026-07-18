@@ -110,6 +110,12 @@ class TicketRepository(BaseRepository[Ticket]):
         stmt = select(func.count()).select_from(Comment).where(Comment.ticket_id == ticket_id)
         return int(self.db.scalar(stmt) or 0)
 
+    def list_created_by_user(self, user_id: UUID) -> list[Ticket]:
+        stmt = (
+            select(Ticket).where(Ticket.created_by_id == user_id).order_by(Ticket.created_at.desc())
+        )
+        return list(self.db.scalars(stmt))
+
     def save(self, ticket: Ticket) -> Ticket:
         self.db.commit()
         self.db.refresh(ticket)
