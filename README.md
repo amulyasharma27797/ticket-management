@@ -265,17 +265,19 @@ The project is built in incremental phases (0–10). Each phase leaves the appli
 | Phase | Status | Branch | Notes |
 |-------|--------|--------|-------|
 | **0** | **Complete** | `cursor/phase-0-scaffold` | Docker Compose, health endpoints, React scaffold — verified locally |
-| 1 | Pending | — | Database models, Alembic migrations |
-| 2–10 | Pending | — | See table below |
+| **1** | **Complete** | `cursor/phase-1-database` | ORM models, Alembic migrations, Clean Architecture skeleton |
+| 2 | Pending | — | Authentication (JWT, login/register/logout) |
 
 **Pre-Phase 0 (done):** repo scaffold, README, `.env.example`, migrations skeleton, harness template, lint tooling, Cursor rules/skills.
 
 **Phase 0 (complete):** `docker compose up --build` boots postgres + backend + frontend; `GET /api/v1/health` returns 200; `GET /api/v1/health/ready` reports DB connected; frontend loads and displays backend health; pytest + vitest pass.
 
+**Phase 1 (complete):** SQLAlchemy models (`users`, `tickets`, `comments`, `sessions`) with PostgreSQL enums; Alembic auto-migrates on backend startup; integration tests verify tables and enums exist.
+
 | Phase | Focus |
 |-------|-------|
 | 0 | Docker Compose, FastAPI + React skeletons, health checks **(done)** |
-| 1 | Database models, Alembic migrations |
+| 1 | Database models, Alembic migrations **(done)** |
 | 2 | Authentication (JWT, login/register/logout) |
 | 3 | Ticket CRUD |
 | 4 | Listing, search, filters |

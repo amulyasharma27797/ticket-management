@@ -40,4 +40,4 @@ docker compose exec backend alembic -c alembic.ini downgrade -1
 
 | Revision | Date | Description | Tables |
 |----------|------|-------------|--------|
-| — | — | No migrations yet (Phase 1) | — |
+| `20260718_0001` | 2026-07-18 | Initial schema | `users`, `tickets`, `comments`, `sessions` |

@@ -27,4 +27,9 @@ print("PostgreSQL did not become ready in time.", file=sys.stderr)
 sys.exit(1)
 PY
 
+echo "Applying database migrations..."
+cd /app
+alembic -c alembic.ini upgrade head
+
+cd /app/apps/backend
 exec uvicorn app.main:app --host 0.0.0.0 --port 8000
